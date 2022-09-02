@@ -108,7 +108,7 @@ for line in f:
 
 	# Exersice 3.3: relative angle
 	dt = (ts_now-ts_prev)
-	bias += 2.5/6000 * dt
+	bias = 2.5/1000
 	# print("value" ,bias/count)
 	relative_angle += (gyro_z - bias) *dt 
 

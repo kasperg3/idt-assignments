@@ -26,9 +26,9 @@ show3DLiveViewInterval = 3
 ##### Insert initialize code below ###################
 
 # approx. bias values determined by averaging over static measurements
-bias_gyro_x = 2.5/6000 # [rad/measurement]
-bias_gyro_y = 2.5/6000 # [rad/measurement]
-bias_gyro_z = 2.5/6000 # [rad/measurement]
+bias_gyro_x = 2*pi/90 # [rad/measurement]
+bias_gyro_y = 2*pi/90 # [rad/measurement]
+bias_gyro_z = 2*pi/90 # [rad/measurement]
 
 # variances
 gyroVar = 0.5
@@ -60,6 +60,8 @@ f = open (fileName, "r")
 count = 0
 relative_angle = 0
 bias=0
+a = 0.1 # low pass smoothing factor/cutoff
+prev_pitch = 0;
 # initialize 3D liveview
 if show3DLiveView == True:
 	imuview = imu_visualize()
@@ -121,12 +123,17 @@ for line in f:
 	# gyro_z	Angular velocity measured about the z axis
 
 	## Insert your code here ##
-	dt = (ts_now-ts_prev)
 	# calculate pitch (x-axis) and roll (y-axis) angles
 	pitch = atan2(-acc_y, acc_z)
 	roll = atan2(acc_x, sqrt(pow(acc_y,2.0) + pow(acc_z,2.0)))
 
+	if(prev_pitch == 0) :
+		prev_pitch = pitch
+	pitch = a*pitch + (1-a)*prev_pitch
+	prev_pitch = pitch
+
 	# integrate gyro velocities to releative angles
+	dt = (ts_now-ts_prev)
 	gyro_x_rel += gyro_x * dt
 	gyro_y_rel += gyro_y * dt
 	gyro_z_rel += gyro_z * dt
@@ -136,8 +143,9 @@ for line in f:
 	gyroVarAcc += gyroVar
 	predVar = estVar + gyroVarAcc*dt
 
-	estAngle = pred_pitch
-	estVar = predVar
+	# Not necesarry to update due to new samples every step
+	# estAngle = pred_pitch
+	# estVar = predVar
 
 	# Kalman correction step (we have new data in each iteration) 
 	K = pred_pitch / (gyro_x_rel - pred_pitch)
@@ -145,10 +153,10 @@ for line in f:
 	corrVar = predVar *(1 -K)
 	estAngle = corrAngle
 	estVar = corrVar
-	gyroVarAccumulated = 0
+	gyroVarAccumulated = 0 # reset acc variance
 
 	# define which value to plot as the Kalman filter estimate
-	kalman_estimate = corrAngle
+	kalman_estimate = estAngle
 
 	# define which value to plot as the absolute value (pitch/roll)
 	pitch_roll_plot = pitch
