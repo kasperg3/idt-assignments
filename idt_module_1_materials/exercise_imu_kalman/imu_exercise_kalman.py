@@ -26,13 +26,13 @@ show3DLiveViewInterval = 3
 ##### Insert initialize code below ###################
 
 # approx. bias values determined by averaging over static measurements
-bias_gyro_x = 0.0 # [rad/measurement]
-bias_gyro_y = 0.0 # [rad/measurement]
-bias_gyro_z = 0.0 # [rad/measurement]
+bias_gyro_x = 2.5/6000 # [rad/measurement]
+bias_gyro_y = 2.5/6000 # [rad/measurement]
+bias_gyro_z = 2.5/6000 # [rad/measurement]
 
 # variances
-gyroVar = 0
-pitchVar = 0
+gyroVar = 0.5
+pitchVar = 0.5
 
 # Kalman filter start guess
 estAngle = -pi/4.0
@@ -122,7 +122,6 @@ for line in f:
 
 	## Insert your code here ##
 	dt = (ts_now-ts_prev)
-	relative_angle += gyro_z *dt 
 	# calculate pitch (x-axis) and roll (y-axis) angles
 	pitch = atan2(-acc_y, acc_z)
 	roll = atan2(acc_x, sqrt(pow(acc_y,2.0) + pow(acc_z,2.0)))
@@ -134,14 +133,15 @@ for line in f:
 
 	# Kalman prediction step (we have new data in each iteration)
 	pred_pitch = pitch  + gyro_x * dt
-	gyroVarAcc = gyroVarAcc + gyroVar
+	gyroVarAcc += gyroVar
 	predVar = estVar + gyroVarAcc*dt
+
 	estAngle = pred_pitch
 	estVar = predVar
 
 	# Kalman correction step (we have new data in each iteration) 
 	K = pred_pitch / (gyro_x_rel - pred_pitch)
-	corrAngle = pred_pitch + K *(gyro_x_rel -pred_pitch)
+	corrAngle = pred_pitch + K * (gyro_x_rel - pred_pitch)
 	corrVar = predVar *(1 -K)
 	estAngle = corrAngle
 	estVar = corrVar
