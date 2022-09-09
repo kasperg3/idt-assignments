@@ -31,11 +31,11 @@ bias_gyro_y = 2*pi/90  # [rad/measurement]
 bias_gyro_z = 2*pi/90  # [rad/measurement]
 
 # variances
-gyroVar = 0.5
-pitchVar = 0.5
+gyroVar = 0.1
+pitchVar = 10.0
 
 # Kalman filter start guess
-estAngle = -pi/4.0
+estAngle = 0
 estVar = 3.14
 
 # Kalman filter housekeeping variables
@@ -60,7 +60,6 @@ f = open(fileName, "r")
 count = 0
 relative_angle = 0
 bias = 0
-a = 0.1  # low pass smoothing factor/cutoff
 prev_pitch = 0
 # initialize 3D liveview
 if show3DLiveView == True:
@@ -124,13 +123,8 @@ for line in f:
 
     ## Insert your code here ##
     # calculate pitch (x-axis) and roll (y-axis) angles
-    pitch = atan2(-acc_y, acc_z)
+    pitch = atan2(acc_y, acc_z)
     roll = atan2(acc_x, sqrt(pow(acc_y, 2.0) + pow(acc_z, 2.0)))
-
-    if (prev_pitch == 0):
-        prev_pitch = pitch
-    pitch = a*pitch + (1-a)*prev_pitch
-    prev_pitch = pitch
 
     # integrate gyro velocities to releative angles
     dt = (ts_now-ts_prev)
@@ -139,17 +133,17 @@ for line in f:
     gyro_z_rel += gyro_z * dt
 
     # Kalman prediction step (we have new data in each iteration)
-    pred_pitch = pitch + gyro_x * dt
+    predAngle = estAngle + gyro_x * dt
     gyroVarAcc += gyroVar
     predVar = estVar + gyroVarAcc*dt
 
     # Not necesarry to update due to new samples every step
-    # estAngle = pred_pitch
-    # estVar = predVar
+    estAngle = predAngle
+    estVar = predVar
 
     # Kalman correction step (we have new data in each iteration)
-    K = predVar / (gyroVarAcc + predVar)
-    corrAngle = pred_pitch + K * (gyro_x_rel - pred_pitch)
+    K = predVar / (pitchVar + predVar)
+    corrAngle = predAngle + K * (pitch - predAngle)
     corrVar = predVar * (1 - K)
     estAngle = corrAngle
     estVar = corrVar

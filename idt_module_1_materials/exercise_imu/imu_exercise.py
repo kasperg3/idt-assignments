@@ -10,9 +10,9 @@
 from math import pi, sqrt, atan2
 import matplotlib.pyplot as plt
 # fileName = 'imu_razor_data_static.txt'
-fileName = 'imu_razor_data_pitch_55deg.txt'
+# fileName = 'imu_razor_data_pitch_55deg.txt'
 # fileName = 'imu_razor_data_roll_65deg.txt'
-# fileName = 'imu_razor_data_yaw_90deg.txt'
+fileName = 'imu_razor_data_yaw_90deg.txt'
 
 # IMU type
 #imuType = 'vectornav_vn100'
@@ -21,6 +21,7 @@ imuType = 'sparkfun_razor'
 ## Variables for plotting ##
 showPlot = True
 plotData = []
+plotData1 = []
 
 ## Initialize your variables here ##
 myValue = 0.0
@@ -91,26 +92,21 @@ for line in f:
 
     # Exersice 3.2
     roll = atan2(acc_x, sqrt(pow(acc_y, 2.0) + pow(acc_z, 2.0)))
-    pitch = atan2(-acc_y, acc_z)
+    pitch = atan2(acc_y, acc_z)
 
     myValue = pitch  # relevant for the first exercise, then change this.
-
-    if (y == 0):
-        y = myValue
-    a = 0.2
-    y = a*myValue + (1-a)*y
-    filtered = y
 
     # Exersice 3.3: relative angle
     dt = (ts_now-ts_prev)
     bias = 2.5/1000
-    relative_angle += (gyro_z - bias) * dt
+    relative_angle += (gyro_z-bias) * dt
 
     # in order to show a plot use this function to append your value to a list:
     # plotData.append(roll*180.0/pi)  # Exersize 3.2.1
     # plotData.append(roll*180.0/pi)  # Exersize 3.2.2
-    plotData.append(filtered*180.0/pi)  # Exersize 3.2.4
-    # plotData.append(relative_angle*180.0/pi)  # Exersize 3.2.5
+    # plotData.append(roll*180.0/pi)  # Exersize 3.2.4
+    plotData.append(relative_angle*180.0/pi)  # Exersize 3.2.5
+    # plotData1.append(0)  # Exersize 3.2.5
     # Exersize 3.2.5 (Use atan2 this method is taking care of limited euler angles)
 
     ######################################################
@@ -121,6 +117,7 @@ f.close()
 # show the plot
 if showPlot == True:
     plt.plot(plotData)
+    # plt.plot(plotData1)
     ax = plt.gca()
-    plt.savefig('imu_exercise_plot_exersice_pitch_filtered3.3.png')
+    plt.savefig('imu_exercise_plot_exersice_gyro_yaw.png')
     plt.show()
