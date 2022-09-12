@@ -40,32 +40,69 @@ Revision
 
 # import utmconv class
 from utm import utmconv
-from math import pi, cos
+from math import pi, cos, sin, sqrt, asin, acos
 
-# geodetic reference coordinate
-lat1 =  55.0
-lon1 = 009.0
+def getLattitudeConvertionError(lattitude, longitude, lattitude_difference) : 
+    (hemisphere, zone, letter, e, n) = uc.geodetic_to_utm (lattitude,longitude)
+    e_new = e + lattitude_difference
+    n_new = n 
 
-print ('First position [deg]:')
-print ('  latitude:  %.8f'  % (lat1))
-print ('  longitude: %.8f'  % (lon1))
+    # convert back from UTM to geodetic
+    (lattitude_new, longitude_new) = uc.utm_to_geodetic(hemisphere, zone, e_new, n_new)
+
+    # calculate the error using Great Circle Distance Formula
+    calc_distance=2*asin(sqrt((sin((lattitude-lattitude_new)/2))**2+cos(lattitude)*cos(lattitude_new)*(sin((longitude-longitude_new)/2))**2))
+    #calc_distance = d=acos(sin(lat1)*sin(lat3)+cos(lat1)*cos(lat3)*cos(lon1-lon3))
+    error = lattitude_difference - calc_distance
+    
+    print('Distance: ', lattitude_difference,' Calculated distance: ', calc_distance, 'Error: ',  error)
+    return error
+
+def getLongitudeConvertionError(lattitude, longitude, longitude_difference) : 
+    (hemisphere, zone, letter, e, n) = uc.geodetic_to_utm (lattitude,longitude)
+    e_new = e 
+    n_new = n + longitude_difference
+
+    # convert back from UTM to geodetic
+    (lattitude_new, longitude_new) = uc.utm_to_geodetic(hemisphere, zone, e_new, n_new)
+
+    # calculate the error using Great Circle Distance Formula
+    calc_distance=2*asin(sqrt((sin((lattitude-lattitude_new)/2))**2+cos(lattitude)*cos(lattitude_new)*(sin((longitude-longitude_new)/2))**2))
+    #calc_distance = d=acos(sin(lat1)*sin(lat3)+cos(lat1)*cos(lat3)*cos(lon1-lon3))
+    error = longitude_difference - calc_distance
+    
+    print('Distance: ', longitude_difference,' Calculated distance: ', calc_distance, 'Error: ',  error)
+    return error
+
+
+def exercise_4_1():
+    # Drone center
+    lat1 =  55.47
+    lon1 = 10.33
+    print("Error @ the Drone Center")
+    getLattitudeConvertionError(lat1, lon1,1000)
+
+    # Iceland
+    lat1 = 65.887393
+    lon1 = 10.33
+    print("Error @ Iceland")
+    getLattitudeConvertionError(lat1, lon1,1000)
+
+    # Greenland
+    lat1 = 81.988262
+    lon1 = 10.33
+    print("Error @ Greenland")
+
+    getLattitudeConvertionError(lat1, lon1,1000)
+
+    # Longitude test
+    lat1 = 55.47
+    lon1 = 10.33
+    print("Error Longitude Test")
+    getLongitudeConvertionError(lat1, lon1,1000)
+
 
 # instantiate utmconv class
 uc = utmconv()
 
-# convert from geodetic to UTM
-(hemisphere, zone, letter, e1, n1) = uc.geodetic_to_utm (lat1,lon1)
-print ('\nConverted from geodetic to UTM [m]')
-print ('  %d %c %.5fe %.5fn' % (zone, letter, e1, n1))
-
-# now generating the second UTM coordinate
-e2 = e1 + 100.0 
-n2 = n1 
-
-# convert back from UTM to geodetic
-(lat2, lon2) = uc.utm_to_geodetic (hemisphere, zone, e2, n2)
-print ('\nSecond position 100 meter East [deg]:')
-print ('  latitude:  %.8f'  % (lat2))
-print ('  longitude: %.8f'  % (lon2))
-
-
+exercise_4_1()

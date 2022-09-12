@@ -199,7 +199,7 @@ class tranmerc():
 		t13 = t * ( 1385.0 + 3633.0 * tan2 + 4095.0 * tan4 + 1575.0 * t**6)/ (40320.0 * sr * sn**7 * self.scale**8)
 		lat = ftphi - de**2 * t10 + de**4 * t11 - de**6 * t12 + de**8 * t13;
 
-	# calculate the longitude
+		# calculate the longitude
 		t14 = 1.0 / (sn * c * self.scale)
 		t15 = (1.0 + 2.0 * tan2 + eta) / (6.0 * sn**3 * c * self.scale**3)
 		t16 = (5.0 + 6.0 * eta + 28.0 * tan2 - 3.0 * eta2 + 8.0 * tan2 * eta + 24.0 * tan4 - 4.0 * eta3 + 4.0 * tan2 * eta2 + 24.0 * tan2 * eta3) / (120.0 * sn**5 * c * self.scale**5)
