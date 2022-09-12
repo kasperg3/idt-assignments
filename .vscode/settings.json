@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./idt_module_2_materials/exercise_utm"
+    ]
+}
