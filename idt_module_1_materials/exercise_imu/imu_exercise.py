@@ -39,9 +39,11 @@ count = 0
 
 # looping through file
 
-y = 0
 relative_angle = 0  # pi/2
 bias = 0
+roll_prev = 0
+pitch_prev = 0
+a=0.1
 for line in f:
     count += 1
 
@@ -94,19 +96,24 @@ for line in f:
     roll = atan2(acc_x, sqrt(pow(acc_y, 2.0) + pow(acc_z, 2.0)))
     pitch = atan2(acc_y, acc_z)
 
-    myValue = pitch  # relevant for the first exercise, then change this.
+    if roll_prev == 0 : roll_prev = roll
+    if pitch_prev == 0 : pitch_prev = pitch
+    roll_filtered = a*roll + (1-a)*roll_prev
+    pitch_filtered = a*pitch + (1-a)*pitch_prev
+    pitch_prev = pitch_filtered
+    roll_prev=roll_filtered
 
     # Exersice 3.3: relative angle
     dt = (ts_now-ts_prev)
-    bias = 2.5/1000
-    relative_angle += (gyro_z-bias) * dt
+    bias = 2.5/3130
+    relative_angle += (gyro_z - bias) * dt
 
     # in order to show a plot use this function to append your value to a list:
-    # plotData.append(roll*180.0/pi)  # Exersize 3.2.1
+    plotData.append(relative_angle*180.0/pi)  # Exersize 3.2.1
     # plotData.append(roll*180.0/pi)  # Exersize 3.2.2
-    # plotData.append(roll*180.0/pi)  # Exersize 3.2.4
-    plotData.append(relative_angle*180.0/pi)  # Exersize 3.2.5
-    # plotData1.append(0)  # Exersize 3.2.5
+    # plotData.append(filtered*180.0/pi)  # Exersize 3.2.4
+    # plotData1.append(pitch*180.0/pi)  # Exersize 3.2.4
+    # plotData.append(relative_angle*180.0/pi)  # Exersize 3.2.5
     # Exersize 3.2.5 (Use atan2 this method is taking care of limited euler angles)
 
     ######################################################
@@ -116,8 +123,8 @@ f.close()
 
 # show the plot
 if showPlot == True:
-    plt.plot(plotData)
     # plt.plot(plotData1)
+    plt.plot(plotData)
     ax = plt.gca()
-    plt.savefig('imu_exercise_plot_exersice_gyro_yaw.png')
+    plt.savefig('imu_exercise_plot_exersice_gyro_roll.png')
     plt.show()
