@@ -127,7 +127,7 @@ if __name__ == "__main__":
   geoidal_separation = np.array(nmea.getColumnData(11)).astype(float)
   unit_antenna = np.array(nmea.getColumnData(10))
   unit_geoidal = np.array(nmea.getColumnData(12))
-  hae = geoidal_separation - antenna_altitude
+  hae = antenna_altitude -geoidal_separation
 
   # TODO something is wrong, what format is the data in???
   # TODO convert using this dd = d + m/60 + s/3600
