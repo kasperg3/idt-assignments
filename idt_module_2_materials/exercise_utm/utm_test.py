@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#*****************************************************************************
+# *****************************************************************************
 # UTM projection conversion test
 # Copyright (c) 2013-2020, Kjeld Jensen <kjeld@frobomind.org>
 # All rights reserved.
@@ -25,7 +25,7 @@
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#*****************************************************************************
+# *****************************************************************************
 """
 This file contains a simple Python script to test the UTM conversion class.
 
@@ -42,69 +42,78 @@ Revision
 from utm import utmconv
 from math import pi, cos, sin, sqrt, asin, acos
 
-def getLattitudeConvertionError(lattitude, longitude, lattitude_difference) : 
-    (hemisphere, zone, letter, e, n) = uc.geodetic_to_utm (lattitude,longitude)
+
+def getLattitudeConvertionError(lattitude, longitude, lattitude_difference):
+    earthRadius = 6378137.0
+
+    (hemisphere, zone, letter, e, n) = uc.geodetic_to_utm(lattitude, longitude)
     e_new = e + lattitude_difference
-    n_new = n 
+    n_new = n
 
     # convert back from UTM to geodetic
-    (lattitude_new, longitude_new) = uc.utm_to_geodetic(hemisphere, zone, e_new, n_new)
+    (lattitude_new, longitude_new) = uc.utm_to_geodetic(
+        hemisphere, zone, e_new, n_new)
 
     # calculate the error using Great Circle Distance Formula
-    calc_distance=2*asin(sqrt((sin((lattitude-lattitude_new)/2))**2+cos(lattitude)*cos(lattitude_new)*(sin((longitude-longitude_new)/2))**2))
-    #calc_distance = d=acos(sin(lat1)*sin(lat3)+cos(lat1)*cos(lat3)*cos(lon1-lon3))
-    calc_distance = calc_distance * 6371.0
-
+    calc_distance = 2*asin(sqrt((sin((lattitude*(pi/180)-lattitude_new*(pi/180))/2))**2+cos(
+        lattitude*(pi/180))*cos(lattitude_new*(pi/180))*(sin((longitude*(pi/180)-longitude_new*(pi/180))/2))**2))
+    calc_distance = calc_distance*((180*60)/pi)
+    calc_distance = calc_distance*1852
     error = lattitude_difference - calc_distance
-    
-    print('Distance: ', lattitude_difference,' Calculated distance: ', calc_distance, 'Error: ',  error)
+
+    print('Distance: ', lattitude_difference,
+          ' Calculated distance: ', calc_distance, 'Error: ',  error)
     return error
 
-def getLongitudeConvertionError(lattitude, longitude, longitude_difference) : 
-    (hemisphere, zone, letter, e, n) = uc.geodetic_to_utm (lattitude,longitude)
-    e_new = e 
+
+def getLongitudeConvertionError(lattitude, longitude, longitude_difference):
+    earthRadius = 6378137.0
+    # Convert from geodetic to UTM and add distance
+    (hemisphere, zone, letter, e, n) = uc.geodetic_to_utm(lattitude, longitude)
+    e_new = e
     n_new = n + longitude_difference
 
     # convert back from UTM to geodetic
-    (lattitude_new, longitude_new) = uc.utm_to_geodetic(hemisphere, zone, e_new, n_new)
+    (lattitude_new, longitude_new) = uc.utm_to_geodetic(
+        hemisphere, zone, e_new, n_new)
 
     # calculate the error using Great Circle Distance Formula
-    calc_distance=2*asin(sqrt((sin((lattitude-lattitude_new)/2))**2+cos(lattitude)*cos(lattitude_new)*(sin((longitude-longitude_new)/2))**2))
-    # TODO Calc distance is in radians, make sure to multiply with radius of the earth
-    calc_distance = calc_distance * 6371.0
-    
-    #calc_distance = d=acos(sin(lat1)*sin(lat3)+cos(lat1)*cos(lat3)*cos(lon1-lon3))
+    calc_distance = 2*asin(sqrt((sin((lattitude*(pi/180)-lattitude_new*(pi/180))/2))**2+cos(
+        lattitude*(pi/180))*cos(lattitude_new*(pi/180))*(sin((longitude*(pi/180)-longitude_new*(pi/180))/2))**2))
+    calc_distance = calc_distance*(180/pi) * 60  # radians to degrees*minutes
+    calc_distance = calc_distance*1852  # Nautic mile to km
     error = longitude_difference - calc_distance
-    
-    print('Distance: ', longitude_difference,' Calculated distance: ', calc_distance, 'Error: ',  error)
+
+    print('Distance: ', longitude_difference,
+          ' Calculated distance: ', calc_distance, 'Error: ',  error)
     return error
 
 
 def exercise_4_1():
     # Drone center
-    lat1 =  55.47
+    lat1 = 55.47
     lon1 = 10.33
     print("Error @ the Drone Center")
-    getLattitudeConvertionError(lat1, lon1,1.)
+    getLattitudeConvertionError(lat1, lon1, 1000.)
 
     # Iceland
     lat1 = 65.887393
     lon1 = 10.33
     print("Error @ Iceland")
-    getLattitudeConvertionError(lat1, lon1,1.)
+    getLattitudeConvertionError(lat1, lon1, 1000.)
 
     # Greenland
     lat1 = 81.988262
     lon1 = 10.33
     print("Error @ Greenland")
 
-    getLattitudeConvertionError(lat1, lon1,1.)
+    getLattitudeConvertionError(lat1, lon1, 1000.)
 
     # Longitude test
     lat1 = 55.47
     lon1 = 10.33
     print("Error Longitude Test")
-    getLongitudeConvertionError(lat1, lon1,1.)
+    getLongitudeConvertionError(lat1, lon1, 1000.)
 
 
 # instantiate utmconv class
