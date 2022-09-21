@@ -57,6 +57,8 @@ def getLattitudeConvertionError(lattitude, longitude, lattitude_difference):
     # calculate the error using Great Circle Distance Formula
     calc_distance = 2*asin(sqrt((sin((lattitude*(pi/180)-lattitude_new*(pi/180))/2))**2+cos(
         lattitude*(pi/180))*cos(lattitude_new*(pi/180))*(sin((longitude*(pi/180)-longitude_new*(pi/180))/2))**2))
+    # Great circle distance can be likewise be expressed in radians by defining the distance to be the angle subtended by the
+    # arc at the center of the earth. Since by definition, one nautical mile subtends one minute (=1/60 degree) of arc, we have:
     calc_distance = calc_distance*((180*60)/pi)
     calc_distance = calc_distance*1852
     error = lattitude_difference - calc_distance
@@ -80,7 +82,7 @@ def getLongitudeConvertionError(lattitude, longitude, longitude_difference):
     # calculate the error using Great Circle Distance Formula
     calc_distance = 2*asin(sqrt((sin((lattitude*(pi/180)-lattitude_new*(pi/180))/2))**2+cos(
         lattitude*(pi/180))*cos(lattitude_new*(pi/180))*(sin((longitude*(pi/180)-longitude_new*(pi/180))/2))**2))
-    calc_distance = calc_distance*(180/pi) * 60  # radians to degrees*minutes
+    calc_distance = ((180*60)/pi)*calc_distance  # radians to degrees*seconds
     calc_distance = calc_distance*1852  # Nautic mile to km
     error = longitude_difference - calc_distance
 
@@ -94,24 +96,24 @@ def exercise_4_1():
     lat1 = 55.47
     lon1 = 10.33
     print("Error @ the Drone Center")
-    getLattitudeConvertionError(lat1, lon1, 1000.)
+    getLongitudeConvertionError(lat1, lon1, 1000.)
 
     # Iceland
-    lat1 = 65.887393
-    lon1 = 10.33
+    lat1 = 55.47
+    lon1 = 12.33
     print("Error @ Iceland")
-    getLattitudeConvertionError(lat1, lon1, 1000.)
+    getLongitudeConvertionError(lat1, lon1, 1000.)
 
     # Greenland
-    lat1 = 81.988262
-    lon1 = 10.33
+    lat1 = 55.47
+    lon1 = 20.33
     print("Error @ Greenland")
 
-    getLattitudeConvertionError(lat1, lon1, 1000.)
+    getLongitudeConvertionError(lat1, lon1, 1000.)
 
     # Longitude test
     lat1 = 55.47
-    lon1 = 10.33
+    lon1 = 50.33
     print("Error Longitude Test")
     getLongitudeConvertionError(lat1, lon1, 1000.)
 

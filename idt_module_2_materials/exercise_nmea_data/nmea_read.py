@@ -39,40 +39,7 @@ class nmea_line:
     # Class for parsing a NMEA 0183 line
     def __init__(self, line):
         self.line = line.split(',')  # split into comma separated list
-        # https://www.gpsworld.com/what-exactly-is-gps-nmea-data/
-        # The $GPGGA is a basic GPS NMEA message. There are alternative and companion NMEA messages that provide similar or additional information.
-        # self.columns = ["talker_type", "utc_time", "lattitude", "lattitude_direction", "longitude", "longitude_direction", "quality", "n_sattelites","hdop","antenna_altitude", "altitude_unit", "geoidal_separation","correction_age","correction_station_id","checksum"]
-        # self.talker_type = self.__getColumnValue(0,line)
-        # #$GPGSA – Detailed GPS DOP and detailed satellite tracking information (eg. individual satellite numbers). $GNGSA for GNSS receivers.
-        # #$GPGSV – Detailed GPS satellite information such as azimuth and elevation of each satellite being tracked. $GNGSV for GNSS receivers.
-        # #$GPVTG – Speed over ground and tracking offset.
-        # #$GPGST – Estimated horizontal and vertical precision. $GNGST for GNSS receivers.
-        # self.utc_time = self.__getColumnValue(1,line)
-        # self.lattitude = self.__getColumnValue(2,line) # DDMM.MMMMM format
-        # self.lattitude_direction = self.__getColumnValue(3,line) # N or S
-        # self.longitude = self.__getColumnValue(4,line) # DDMM.MMMMM format
-        # self.longitude_direction = self.__getColumnValue(5,line) # W or E
-        # self.quality = self.__getColumnValue(6,line) # 1= uncorrected coordinate,
-        # #2 = Differentially correct coordinate (e.g., WAAS, DGPS)
-        # #4 = RTK Fix coordinate (centimeter precision)
-        # #5 = RTK Float (decimeter precision.
-        # self.n_sattelites = self.__getColumnValue(7,line)
-        # self.hdop = self.__getColumnValue(8,line) # horizontal dilution precision
-        # self.antenna_altitude = self.__getColumnValue(9,line)
-        # self.altitude_unit = self.__getColumnValue(10,line)
-        # self.geoidal_separation = self.__getColumnValue(11,line) # geoidal separation (subtract this from the altitude of the antenna to arrive at the Height Above Ellipsoid (HAE).
-        # self.geoidal_unit = self.__getColumnValue(12,line)
-        # self.correction_age = self.__getColumnValue(13,line)
-        # self.correction_station_id = self.__getColumnValue(14,line)
-        # #self.checksum = self.__getColumnValue(15,line) TODO make this work, currently the checksum is a part of the station id
 
-    # def __getColumnValue(self,index, line):
-    #   result = ""
-    #   try:
-    #     result = line[index]
-    #   except Exception as e:
-    #     print(e)
-    #   return result
     def getNmeaMsg(self):
         return self.msg
 
@@ -177,13 +144,14 @@ if __name__ == "__main__":
             gdop_time.append(temp)
             gdop.append(math.sqrt(hdop**2 + vdop**2))
 
-    print("Plotting...")
-    showPlot = False
+    showPlot = True
     if showPlot == True:
+        print("Plotting...")
         # 1.  Altitude above Mean Sea Level with respect to time during the drone flight.
         plt.figure(1)
         plt.xlabel("Time UTC")
         plt.ylabel("Antenna altitude above/below mean sea level")
+        plt.ylim([0, 30])
         plt.plot(time, hae)
         plt.savefig('height_above_mean_sea_level.png')
 
@@ -191,6 +159,8 @@ if __name__ == "__main__":
         plt.figure(2)
         plt.xlabel("Time UTC")
         plt.ylabel("number of sattelites")
+        plt.ylim([0, 15])
+
         plt.plot(time, n_sattelites)
         plt.savefig('number_of_sattelites.png')
 
@@ -199,6 +169,7 @@ if __name__ == "__main__":
         plt.title("Drone trajectory")
         plt.xlabel("Longitude")
         plt.ylabel("Lattitude")
+        # plt.ticklabel_format(useOffset=False)
         plt.plot(longitude, lattitude, marker=" ")
         plt.savefig('drone_trajectory.png')
 
