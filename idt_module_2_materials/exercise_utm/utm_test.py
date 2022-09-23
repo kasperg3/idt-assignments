@@ -53,7 +53,9 @@ def getLattitudeConvertionError(lattitude, longitude, lattitude_difference):
     # convert back from UTM to geodetic
     (lattitude_new, longitude_new) = uc.utm_to_geodetic(
         hemisphere, zone, e_new, n_new)
+    print("Coordinates: ", lattitude, ",", longitude)
 
+    print("New Coordinates: ", lattitude_new, ",", longitude_new)
     # calculate the error using Great Circle Distance Formula
     calc_distance = 2*asin(sqrt((sin((lattitude*(pi/180)-lattitude_new*(pi/180))/2))**2+cos(
         lattitude*(pi/180))*cos(lattitude_new*(pi/180))*(sin((longitude*(pi/180)-longitude_new*(pi/180))/2))**2))
@@ -78,6 +80,8 @@ def getLongitudeConvertionError(lattitude, longitude, longitude_difference):
     # convert back from UTM to geodetic
     (lattitude_new, longitude_new) = uc.utm_to_geodetic(
         hemisphere, zone, e_new, n_new)
+    print("Coordinates: ", lattitude, ",", longitude)
+    print("New Coordinates: ", lattitude_new, ",", longitude_new)
 
     # calculate the error using Great Circle Distance Formula
     calc_distance = 2*asin(sqrt((sin((lattitude*(pi/180)-lattitude_new*(pi/180))/2))**2+cos(
@@ -96,20 +100,20 @@ def exercise_4_1():
     lat1 = 55.47
     lon1 = 10.33
     print("Error @ the Drone Center")
-    getLongitudeConvertionError(lat1, lon1, 1000.)
+    getLattitudeConvertionError(lat1, lon1, 100.)
 
     # Iceland
     lat1 = 55.47
     lon1 = 12.33
     print("Error @ Iceland")
-    getLongitudeConvertionError(lat1, lon1, 1000.)
+    getLattitudeConvertionError(lat1, lon1, 1000.)
 
     # Greenland
     lat1 = 55.47
     lon1 = 20.33
     print("Error @ Greenland")
 
-    getLongitudeConvertionError(lat1, lon1, 1000.)
+    getLattitudeConvertionError(lat1, lon1, 1000.)
 
     # Longitude test
     lat1 = 55.47
@@ -121,4 +125,9 @@ def exercise_4_1():
 # instantiate utmconv class
 uc = utmconv()
 
-exercise_4_1()
+# exercise_4_1()
+
+# lat1 = 55.12518
+# lon1 = 10.25419
+# print("Error @ the Drone Center")
+# getLattitudeConvertionError(lat1, lon1, 1000.)
