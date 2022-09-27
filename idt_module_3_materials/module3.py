@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 
 
-def getFresnel(d1, d2, frequency):
+def getFresnel(d1, d2, frequency, fresnelZone=1):
     """_summary_
 
     Args:
@@ -18,18 +18,23 @@ def getFresnel(d1, d2, frequency):
     Returns:
         _type_: _description_
     """
+
+    # C = 299792458
+    # wavelength = C/(frequency*1000000000)
+    # return (math.sqrt((fresnelZone*frequency*1000000000*(d1*d2*1000))/((d1+d2)*1000)))
+
     return (17.3 * (math.sqrt((d1*d2)/(frequency * (d1+d2)))))/1000
 
 
-def plotFresnelZones(d1, d2, xlim=[-1, 201], ylim=[-0.05, 0.05], showPlot=False, title='Fresnel zones'):
+def plotFresnelZones(d1, d2, xlim=[-1, 201], ylim=[-50.0, 50.0], showPlot=True, title='Fresnel zones'):
     plt.figure()
     plt.title(title)
     ax = plt.gca()
     center = ((d1+d2)/2)*1000
     zoneWidth = (d2+d1)*1000
-    print("0.915GHz", getFresnel(d1, d2, 0.915)*1000, "m")
-    print("2.400GHz: ", getFresnel(d1, d2, 2.4)*1000, "m")
-    print("5.800GHz", getFresnel(d1, d2, 5.8)*1000, "m")
+    print("0.433GHz", getFresnel(d1, d2, 0.433), "m")
+    print("2.400GHz: ", getFresnel(d1, d2, 2.4), "m")
+    print("5.800GHz", getFresnel(d1, d2, 5.8), "m")
     ellipse433 = Ellipse(xy=(center, 0.0), width=zoneWidth, height=2*getFresnel(
         d1, d2, 0.433), edgecolor='r', fc='None', lw=2, label="0.433MHz")
     ellipse2400 = Ellipse(xy=(center, 0.0), width=zoneWidth, height=2*getFresnel(
@@ -40,10 +45,13 @@ def plotFresnelZones(d1, d2, xlim=[-1, 201], ylim=[-0.05, 0.05], showPlot=False,
     ax.add_patch(ellipse2400)
     ax.add_patch(ellipse5800)
     plt.legend()
-
+    ax.set_ylabel("Height [m]")
+    ax.set_xlabel("Length [m]")
     plt.xlim([-1, zoneWidth+1])
     plt.ylim(ylim)
     plt.savefig('fresnel' + str(d1) + str(d2) + '.png')
+    if showPlot:
+        plt.show()
 
 
 def radioLinkBudget(distance, txFrequency, txPower, txLineLoss, txAntennaGain, rxLineLoss, rxAntennaGain, rxSensitivity):
@@ -100,11 +108,11 @@ plotFresnelZones(3, 7, title="Simple Example")
 print("Clearence @ 400m:")
 C = math.sqrt(0.0005**2 + 0.400**2)
 D = math.sqrt(0.0495**2 + C**2)
-plotFresnelZones(D/2., D/2., ylim=[-0.01, 0.01], title="400 meter")
+plotFresnelZones(D/2., D/2., ylim=[-10, 10], title="400 meter")
 
 
 # Example: Same as above but at 200m and a building at 100m
 print("Clearence @ 200m:")
 C = math.sqrt(0.0005**2 + 0.200**2)
 D = math.sqrt(0.0495**2 + C**2)
-plotFresnelZones(D/2., D/2., ylim=[-0.01, 0.01], title="200 meter")
+plotFresnelZones(D/2., D/2., ylim=[-10, 10], title="200 meter")
