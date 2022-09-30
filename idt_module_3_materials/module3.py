@@ -23,7 +23,7 @@ def getFresnel(d1, d2, frequency, fresnelZone=1):
     # wavelength = C/(frequency*1000000000)
     # return (math.sqrt((fresnelZone*frequency*1000000000*(d1*d2*1000))/((d1+d2)*1000)))
 
-    return (17.3 * (math.sqrt((d1*d2)/(frequency * (d1+d2)))))/1000
+    return (17.3 * (math.sqrt((d1*d2)/(frequency * (d1+d2)))))
 
 
 def plotFresnelZones(d1, d2, xlim=[-1, 201], ylim=[-50.0, 50.0], showPlot=True, title='Fresnel zones'):
