@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from cmath import log, log10, pi
 import math
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
@@ -15,7 +16,7 @@ def getFresnel(d1, d2, frequency):
     Returns:
         _type_: _description_
     """
-    return (17.3 * (math.sqrt((d1*d2)/(frequency * (d1+d2)))))/1000
+    return (17.3 * (math.sqrt((d1*d2)/(frequency * (d1+d2)))))
 
 
 def plotFresnelZones(d1, d2, xlim=[-1, 11], ylim=[-0.05, 0.05], showPlot=False):
@@ -64,6 +65,7 @@ def radioLinkBudget(distance, txFrequency, txPower, txLineLoss, txAntennaGain, r
     # Reciever sensitivity (recieving antenna gain + transmission line loss, + required minimum signal power, all expressed in dB)
     # Margin, a good rule of thumb is that the margin should at least be 30dB
     rxGain = rxSensitivity + rxLineLoss + rxAntennaGain
+    print("Receiver gain: ", rxGain)
     margin = txGain + linkLoss - rxGain
     print("Margin:", margin)
 
@@ -87,6 +89,7 @@ radioLinkBudget(2, 2400, 100, -1.5, 2, -1.5, 2, -126)
 # 5.8GHz video downlink
 print("###########link budget 5800Mhz###########")
 radioLinkBudget(2, 5800, 100, -1.5, 2, -1.5, 2, -126)
+print("#########################################")
 
 # Example of fresnel zones
 print("simple example:")
