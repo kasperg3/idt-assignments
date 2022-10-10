@@ -1,0 +1,37 @@
+[0.688s] Invoking command in '/home/kasper/workspace/idt-assignments/ros2_ws/src/idt': PYTHONPATH=/home/kasper/workspace/idt-assignments/ros2_ws/install/idt/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/idt build --build-base /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/build install --prefix /home/kasper/workspace/idt-assignments/ros2_ws/install/idt --record /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/install.log --single-version-externally-managed
+[0.904s] running egg_info
+[0.904s] creating ../../build/idt/idt.egg-info
+[0.905s] writing ../../build/idt/idt.egg-info/PKG-INFO
+[0.905s] writing dependency_links to ../../build/idt/idt.egg-info/dependency_links.txt
+[0.905s] writing entry points to ../../build/idt/idt.egg-info/entry_points.txt
+[0.905s] writing requirements to ../../build/idt/idt.egg-info/requires.txt
+[0.905s] writing top-level names to ../../build/idt/idt.egg-info/top_level.txt
+[0.906s] writing manifest file '../../build/idt/idt.egg-info/SOURCES.txt'
+[0.936s] reading manifest file '../../build/idt/idt.egg-info/SOURCES.txt'
+[0.937s] writing manifest file '../../build/idt/idt.egg-info/SOURCES.txt'
+[0.937s] running build
+[0.937s] running build_py
+[0.937s] creating /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/build
+[0.937s] creating /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/build/lib
+[0.938s] creating /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/build/lib/idt
+[0.938s] copying idt/get_global_pos.py -> /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/build/lib/idt
+[0.938s] copying idt/__init__.py -> /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/build/lib/idt
+[0.938s] running install
+[0.938s] running install_lib
+[0.939s] creating /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/lib/python3.8/site-packages/idt
+[0.940s] copying /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/build/lib/idt/get_global_pos.py -> /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/lib/python3.8/site-packages/idt
+[0.940s] copying /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/build/lib/idt/__init__.py -> /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/lib/python3.8/site-packages/idt
+[0.940s] byte-compiling /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/lib/python3.8/site-packages/idt/get_global_pos.py to get_global_pos.cpython-38.pyc
+[0.942s] byte-compiling /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/lib/python3.8/site-packages/idt/__init__.py to __init__.cpython-38.pyc
+[0.942s] running install_data
+[0.943s] creating /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/share/ament_index
+[0.943s] creating /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/share/ament_index/resource_index
+[0.943s] creating /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/share/ament_index/resource_index/packages
+[0.943s] copying resource/idt -> /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/share/ament_index/resource_index/packages
+[0.943s] copying package.xml -> /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/share/idt
+[0.943s] running install_egg_info
+[0.945s] Copying ../../build/idt/idt.egg-info to /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/lib/python3.8/site-packages/idt-0.1.0-py3.8.egg-info
+[0.945s] running install_scripts
+[0.961s] Installing get_global_pos script to /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/lib/idt
+[0.961s] writing list of installed files to '/home/kasper/workspace/idt-assignments/ros2_ws/build/idt/install.log'
+[0.987s] Invoked command in '/home/kasper/workspace/idt-assignments/ros2_ws/src/idt' returned '0': PYTHONPATH=/home/kasper/workspace/idt-assignments/ros2_ws/install/idt/lib/python3.8/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../../build/idt build --build-base /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/build install --prefix /home/kasper/workspace/idt-assignments/ros2_ws/install/idt --record /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/install.log --single-version-externally-managed

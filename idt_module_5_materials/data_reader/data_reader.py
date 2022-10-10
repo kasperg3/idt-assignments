@@ -18,8 +18,10 @@ License: BSD 3-Clause
 
 
 
+from math import pi, sqrt, atan2
 import csv
 from re import X
+from chardet import detect
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -68,9 +70,6 @@ class data_loader():
                 ParaTrigger = float(row['aux1']) * 20
                 self.ParaTriggerS.append(ParaTrigger)
 
-            if self.debugText:
-                print('Data loaded')
-
     def loadCSV_IMU(self):
         with open(self.fileName) as csvfile:
             if self.debugText:
@@ -90,10 +89,6 @@ class data_loader():
                 self.GyroY.append(float(row['gyro_rad[1]']))
                 self.GyroZ.append(float(row['gyro_rad[2]']))
 
-            if self.debugText:
-                print('Data loaded')
-                print('Added ', len(self.TimestampS), " rows")
-
     def loadCSV_GPS(self):
         with open(self.fileName) as csvfile:
             if self.debugText:
@@ -103,11 +98,8 @@ class data_loader():
             for row in readCSV:
                 TimestampS = float(row['timestamp'])/1000000
                 self.TimestampS.append(TimestampS)
-                # self.lat.append(float(row['lat']))
-                # self.lon.append(float(row['lon']))
-
-            if self.debugText:
-                print('Data loaded')
+                self.lat.append(float(row['lat']))
+                self.lon.append(float(row['lon']))
 
     def loadCSV_position(self):
         with open(self.fileName) as csvfile:
@@ -122,22 +114,65 @@ class data_loader():
                 self.positionY.append(float(row['y']))
                 self.positionZ.append(float(row['z']))
 
-            if self.debugText:
-                print('Position Data loaded')
-                print('Added ', len(self.TimestampS), " rows")
+
+class FailureDetector():
+    def __init__(self):
+        self.acc_x = []
+        self.acc_y = []
+        self.acc_z = []
+        self.threshold_x = 9.82
+        self.threshold_y = 9.82
+        self.threshold_z = 5
+        self.hasCrashed = False
+        self.windowOffset = 0
+
+    def update(self, x, y, z):
+        # TODO this will cause memory problems at some point
+        self.acc_x.append(x)
+        self.acc_y.append(y)
+        self.acc_z.append(z)
+
+    def getWindowAverage(self, data, offset, windowSize):
+        window = data[offset: offset + windowSize]
+        return sum(window) / windowSize
+
+    def getWindowDifference(self, windowSize1, windowSize2):
+        return [abs(self.getWindowAverage(self.acc_x, self.windowOffset, windowSize1) - self.getWindowAverage(self.acc_x, self.windowOffset + windowSize1, windowSize2)),
+                abs(self.getWindowAverage(self.acc_y, self.windowOffset, windowSize1) - self.getWindowAverage(
+                    self.acc_y, self.windowOffset + windowSize1, windowSize2)),
+                abs(self.getWindowAverage(self.acc_y, self.windowOffset, windowSize1) - self.getWindowAverage(self.acc_z, self.windowOffset + windowSize1, windowSize2))]
+
+    def isCrashing(self):
+        # Do calculations and if true never be false again (latch mechanic)
+        result = False
+        if self.hasCrashed:
+            result = True
+        else:
+            if len(self.acc_x) > 5:
+                # average of second sample period
+                diff = self.getWindowDifference(10, 10)
+                self.windowOffset = self.windowOffset + 1
+                if diff[0] > self.threshold_x or diff[1] > self.threshold_y or diff[2] > self.threshold_z:
+                    result = True
+
+        self.hasCrashed = result
+        return result
 
 
 # Class end - Main start
 if __name__ == '__main__':
-
-    SENSOR_COMBINED = 'idt_module_5_materials/csv_files/TEST9_08-02-19/TEST9_08-02-19_sensor_combined_0.csv'
-    MANUAL_CONTROLLED_SETPOINT = 'idt_module_5_materials/csv_files/TEST9_08-02-19/TEST9_08-02-19_manual_control_setpoint_0.csv'
-    GPS = 'idt_module_5_materials/csv_files/TEST9_08-02-19/TEST9_08-02-19_vehicle_gps_position_0.csv'
-    POSITION = 'idt_module_5_materials/csv_files/TEST9_08-02-19/TEST9_08-02-19_vehicle_local_position_0.csv'
+    FILE_NAME = 'TEST5_30-01-19'
+    FILE_NAME = 'TEST8_30-01-19'
+    FILE_NAME = 'TEST9_08-02-19'
+    RELATIVE_PATH = 'idt_module_5_materials/csv_files/' + FILE_NAME + '/' + FILE_NAME
+    SENSOR_COMBINED = RELATIVE_PATH + '_sensor_combined_0.csv'
+    MANUAL_CONTROLLED_SETPOINT = RELATIVE_PATH + '_manual_control_setpoint_0.csv'
+    GPS = RELATIVE_PATH + '_vehicle_gps_position_0.csv'
+    POSITION = RELATIVE_PATH + '_vehicle_local_position_0.csv'
 
     # Initialize and load data
-    reader = data_loader(SENSOR_COMBINED, debug=True)
-    reader.loadCSV_IMU()
+    imu = data_loader(SENSOR_COMBINED, debug=True)
+    imu.loadCSV_IMU()
 
     trigger = data_loader(MANUAL_CONTROLLED_SETPOINT, debug=True)
     trigger.loadCSV_para()
@@ -148,42 +183,47 @@ if __name__ == '__main__':
     position = data_loader(POSITION, debug=True)
     position.loadCSV_position()
 
-    # Add readers for the additional files you want to load...
+    # Failure detection
+    detector = FailureDetector()
 
-    # Here you can add the analysis of the different parameters and create boolean variables that triggers upon failure detection.
-    # You can likewise plot these failure detection parameters (with the same timestamp as the investigated dataset) together with the logged data.
+    failure_detection = []
+    for i in range(len(imu.AccelerometerXS)):
+        detector.update(imu.AccelerometerXS[i],
+                        imu.AccelerometerYS[i], imu.AccelerometerZS[i])
+        failure_detection.append(int(detector.isCrashing())*100)
 
+    # Plotting
     fig, (ax, ax1, ax2) = plt.subplots(1, 3)
 
     # acceleration plot:
-    ax.plot(reader.TimestampS, reader.AccelerometerXS,
+    ax.plot(imu.TimestampS, failure_detection,
+            linewidth=0.5, label='detection')
+    ax.plot(imu.TimestampS, imu.AccelerometerXS,
             linewidth=0.5, label='accel_x')
-    ax.plot(reader.TimestampS, reader.AccelerometerYS,
+    ax.plot(imu.TimestampS, imu.AccelerometerYS,
             linewidth=0.5, label='accel_y')
-    ax.plot(reader.TimestampS, reader.AccelerometerZS,
+    ax.plot(imu.TimestampS, imu.AccelerometerZS,
             linewidth=0.5, label='accel_z')
+    ax.plot(trigger.ParaTimestampS, trigger.ParaTriggerS,
+            linewidth=1, label='para_trigger')
     ax.set(xlabel='time (s)', ylabel='acceleration (m/s^2)',
            title='Acceleration Plot')
     legend = ax.legend(loc='best', shadow=True, fontsize='medium')
-    ax.plot(trigger.ParaTimestampS, trigger.ParaTriggerS,
-            linewidth=1, label='para_trigger')
     ax.grid()
 
     # gyro plot
-    ax1.plot(reader.TimestampS, reader.GyroX,
+    ax1.plot(imu.TimestampS, imu.GyroX,
              linewidth=0.5, label='gyro_x')
-    ax1.plot(reader.TimestampS, reader.GyroY,
+    ax1.plot(imu.TimestampS, imu.GyroY,
              linewidth=0.5, label='gyro_y')
-    ax1.plot(reader.TimestampS, reader.GyroZ,
+    ax1.plot(imu.TimestampS, imu.GyroZ,
              linewidth=0.5, label='gyro_z')
     ax1.set(xlabel='time (s)', ylabel='Angular rate',
             title='Gyrometer plot')
     legend = ax1.legend(loc='best', shadow=True, fontsize='medium')
     ax1.grid()
 
-    # GPS / Velocity plot
-
-    # Position
+    # Position Plot
     ax2.plot(position.TimestampS, position.positionX, linewidth=0.5, label='x')
     ax2.plot(position.TimestampS, position.positionY, linewidth=0.5, label='y')
     ax2.plot(position.TimestampS, position.positionZ, linewidth=0.5, label='z')

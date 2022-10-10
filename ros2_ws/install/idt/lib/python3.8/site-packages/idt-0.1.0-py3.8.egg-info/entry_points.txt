@@ -1,0 +1,3 @@
+[console_scripts]
+get_global_pos = idt.get_global_pos:main
+

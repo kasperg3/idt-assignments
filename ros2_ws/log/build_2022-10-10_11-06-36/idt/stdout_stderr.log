@@ -1,0 +1,35 @@
+running egg_info
+creating ../../build/idt/idt.egg-info
+writing ../../build/idt/idt.egg-info/PKG-INFO
+writing dependency_links to ../../build/idt/idt.egg-info/dependency_links.txt
+writing entry points to ../../build/idt/idt.egg-info/entry_points.txt
+writing requirements to ../../build/idt/idt.egg-info/requires.txt
+writing top-level names to ../../build/idt/idt.egg-info/top_level.txt
+writing manifest file '../../build/idt/idt.egg-info/SOURCES.txt'
+reading manifest file '../../build/idt/idt.egg-info/SOURCES.txt'
+writing manifest file '../../build/idt/idt.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/build
+creating /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/build/lib
+creating /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/build/lib/idt
+copying idt/get_global_pos.py -> /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/build/lib/idt
+copying idt/__init__.py -> /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/build/lib/idt
+running install
+running install_lib
+creating /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/lib/python3.8/site-packages/idt
+copying /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/build/lib/idt/get_global_pos.py -> /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/lib/python3.8/site-packages/idt
+copying /home/kasper/workspace/idt-assignments/ros2_ws/build/idt/build/lib/idt/__init__.py -> /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/lib/python3.8/site-packages/idt
+byte-compiling /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/lib/python3.8/site-packages/idt/get_global_pos.py to get_global_pos.cpython-38.pyc
+byte-compiling /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/lib/python3.8/site-packages/idt/__init__.py to __init__.cpython-38.pyc
+running install_data
+creating /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/share/ament_index
+creating /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/share/ament_index/resource_index
+creating /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/share/ament_index/resource_index/packages
+copying resource/idt -> /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/share/ament_index/resource_index/packages
+copying package.xml -> /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/share/idt
+running install_egg_info
+Copying ../../build/idt/idt.egg-info to /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/lib/python3.8/site-packages/idt-0.1.0-py3.8.egg-info
+running install_scripts
+Installing get_global_pos script to /home/kasper/workspace/idt-assignments/ros2_ws/install/idt/lib/idt
+writing list of installed files to '/home/kasper/workspace/idt-assignments/ros2_ws/build/idt/install.log'

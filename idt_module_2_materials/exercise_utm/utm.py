@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#*****************************************************************************
+# *****************************************************************************
 # Universal Transverse Mercator (UTM) conversion
 # Copyright (c) 2013-2022, Kjeld Jensen kjen@sdu.dk kj@kjen.dk
 # All rights reserved.
@@ -25,7 +25,7 @@
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#*****************************************************************************
+# *****************************************************************************
 """
 This class implements conversion between geodetic coordinates and the
 Universal Transverse Mercator (UTM) projection.
@@ -60,121 +60,144 @@ from math import pi
 from transverse_mercator import tranmerc
 
 # WGS-84 defines
-wgs84_a = 6378137.0 # WGS84 semi-major axis of ellipsoid [m]
-wgs84_f = 1/298.257223563 # WGS84 flattening of ellipsoid
+wgs84_a = 6378137.0  # WGS84 semi-major axis of ellipsoid [m]
+wgs84_f = 1/298.257223563  # WGS84 flattening of ellipsoid
 
 # UTM defines
 utm_false_easting = 500000.0
 utm_scale_factor = 0.9996
 utm_origin_latitude = 0.0
 
-#*****************************************************************************
+# *****************************************************************************
+
+
 class utmconv():
-	def __init__(self):
-		self.false_e = 500000.0
-		self.false_n = 0.0
-		self.scale = 0.9996
-		self.zone_override = 0
-		self.deg_to_rad = pi/180.0
-		self.rad_to_deg = 180.0/pi
-		self.tm = tranmerc()
+    def __init__(self):
+        self.false_e = 500000.0
+        self.false_n = 0.0
+        self.scale = 0.9996
+        self.zone_override = 0
+        self.deg_to_rad = pi/180.0
+        self.rad_to_deg = 180.0/pi
+        self.tm = tranmerc()
 
-	def set_zone_override (self, zone):
-		# allow manual override of the utm zone
-		self.zone_override = zone
+    def set_zone_override(self, zone):
+        # allow manual override of the utm zone
+        self.zone_override = zone
 
-	def geodetic_to_utm (self, latitude, longitude):
-		lat = latitude*self.deg_to_rad
-		lon = longitude*self.deg_to_rad
-		lat_deg_int = int(latitude)
-		lon_deg_int = int(longitude)
+    def geodetic_to_utm(self, latitude, longitude):
+        lat = latitude*self.deg_to_rad
+        lon = longitude*self.deg_to_rad
+        lat_deg_int = int(latitude)
+        lon_deg_int = int(longitude)
 
-		# if manually override to a neighbouring zone 
-		if self.zone_override > 0:
-			zone = self.zone_override
-		else:
-			# calculate the zone based on the longitude
-			zone = int((longitude + 180)/6) + 1
-			# handle areas with special conventions (Denmark & South West Norway)
-			if (lat_deg_int > 55) and (lat_deg_int < 64):
-				if (lon_deg_int> -1) and (lon_deg_int < 3):
-					zone = 31
-				if (lon_deg_int> 2) and (lon_deg_int < 12):
-					zone = 32
+        # if manually override to a neighbouring zone
+        if self.zone_override > 0:
+            zone = self.zone_override
+        else:
+            # calculate the zone based on the longitude
+            zone = int((longitude + 180)/6) + 1
+            # handle areas with special conventions (Denmark & South West Norway)
+            if (lat_deg_int > 55) and (lat_deg_int < 64):
+                if (lon_deg_int > -1) and (lon_deg_int < 3):
+                    zone = 31
+                if (lon_deg_int > 2) and (lon_deg_int < 12):
+                    zone = 32
 
-			# handle areas with special conventions (Svalbard)
-			if lat_deg_int > 71:
-				if (lon_deg_int>-1) and (lon_deg_int<9):
-					zone = 31
-				if (lon_deg_int>8) and (lon_deg_int<21):
-					zone = 33
-				if (lon_deg_int>20) and (lon_deg_int<33):
-					zone = 35
-				if (lon_deg_int>32) and (lon_deg_int<42):
-					zone = 37
+            # handle areas with special conventions (Svalbard)
+            if lat_deg_int > 71:
+                if (lon_deg_int > -1) and (lon_deg_int < 9):
+                    zone = 31
+                if (lon_deg_int > 8) and (lon_deg_int < 21):
+                    zone = 33
+                if (lon_deg_int > 20) and (lon_deg_int < 33):
+                    zone = 35
+                if (lon_deg_int > 32) and (lon_deg_int < 42):
+                    zone = 37
 
-		# calculate central meridian for this zone 
-		central_meridian = ((zone - 1)*6 - 180 + 3)*self.deg_to_rad        
+        # calculate central meridian for this zone
+        central_meridian = ((zone - 1)*6 - 180 + 3)*self.deg_to_rad
 
-		# set false northing based on hemishpere
-		if latitude >= 0.0: 
-			false_northing = 0
-			hemisphere = 'N'
+        # set false northing based on hemishpere
+        if latitude >= 0.0:
+            false_northing = 0
+            hemisphere = 'N'
 
-			# determine the UTM zone letter
-			if  latitude >= 72.0: zlet = 'X'
-			elif latitude >= 64.0: zlet = 'W'
-			elif latitude >= 56.0: zlet = 'V'
-			elif latitude >= 48.0: zlet = 'U'
-			elif latitude >= 40.0: zlet = 'T'
-			elif latitude >= 32.0: zlet = 'S'
-			elif latitude >= 24.0: let = 'R'
-			elif latitude >= 16.0: zlet = 'Q'
-			elif latitude >= 8.0: zlet = 'P'
-			else: zlet = 'N'
-		else:
-			false_northing = 10000000
-			hemisphere = 'S'
+            # determine the UTM zone letter
+            if latitude >= 72.0:
+                zlet = 'X'
+            elif latitude >= 64.0:
+                zlet = 'W'
+            elif latitude >= 56.0:
+                zlet = 'V'
+            elif latitude >= 48.0:
+                zlet = 'U'
+            elif latitude >= 40.0:
+                zlet = 'T'
+            elif latitude >= 32.0:
+                zlet = 'S'
+            elif latitude >= 24.0:
+                let = 'R'
+            elif latitude >= 16.0:
+                zlet = 'Q'
+            elif latitude >= 8.0:
+                zlet = 'P'
+            else:
+                zlet = 'N'
+        else:
+            false_northing = 10000000
+            hemisphere = 'S'
 
-			# determine the UTM zone letter
-			if latitude >= -8.0: zlet = 'M'
-			elif latitude >= -16.0: zlet = 'L'
-			elif latitude >= -24.0: zlet = 'K'
-			elif latitude >= -32.0: zlet = 'J'
-			elif latitude >= -40.0: zlet = 'H'
-			elif latitude >= -48.0: zlet = 'G'
-			elif latitude >= -56.0: zlet = 'F'
-			elif latitude >= -64.0: zlet = 'E'
-			elif latitude >= -72.0: zlet = 'D'
-			else: zlet = 'C'
+            # determine the UTM zone letter
+            if latitude >= -8.0:
+                zlet = 'M'
+            elif latitude >= -16.0:
+                zlet = 'L'
+            elif latitude >= -24.0:
+                zlet = 'K'
+            elif latitude >= -32.0:
+                zlet = 'J'
+            elif latitude >= -40.0:
+                zlet = 'H'
+            elif latitude >= -48.0:
+                zlet = 'G'
+            elif latitude >= -56.0:
+                zlet = 'F'
+            elif latitude >= -64.0:
+                zlet = 'E'
+            elif latitude >= -72.0:
+                zlet = 'D'
+            else:
+                zlet = 'C'
 
-		# set parameters for WGS-84, UTM, the false northing and the zone central meridian
-		self.tm.set_params (wgs84_a, wgs84_f, utm_origin_latitude, central_meridian, utm_false_easting, false_northing, utm_scale_factor)
+        # set parameters for WGS-84, UTM, the false northing and the zone central meridian
+        self.tm.set_params(wgs84_a, wgs84_f, utm_origin_latitude, central_meridian,
+                           utm_false_easting, false_northing, utm_scale_factor)
 
-		# perform conversion
-		(easting, northing) = self.tm.geodetic_to_tranmerc (lat, lon)
+        # perform conversion
+        (easting, northing) = self.tm.geodetic_to_tranmerc(lat, lon)
 
-		# return hemisphere, utm zone, utm letter, easting and northing
-		return (hemisphere, zone, zlet, easting, northing)
- 
+        # return hemisphere, utm zone, utm letter, easting and northing
+        return (hemisphere, zone, zlet, easting, northing)
 
-	def utm_to_geodetic (self, hemisphere, zone, easting, northing):
-		# calculate the central meridian for the zone
-		central_meridian = ((zone - 1)*6 - 180 + 3)*self.deg_to_rad      
+    def utm_to_geodetic(self, hemisphere, zone, easting, northing):
+        # calculate the central meridian for the zone
+        central_meridian = ((zone - 1)*6 - 180 + 3)*self.deg_to_rad
 
-		# determine the false northing based on the hemisphere
-		if hemisphere == 'N':
-			false_northing = 0
-		else:
-			false_northing = 10000000
+        # determine the false northing based on the hemisphere
+        if hemisphere == 'N':
+            false_northing = 0
+        else:
+            false_northing = 10000000
 
-		# set parameters for WGS-84, UTM, the false northing and the zone central meridian
-		self.tm.set_params (wgs84_a, wgs84_f, utm_origin_latitude, central_meridian, utm_false_easting, false_northing, utm_scale_factor)
+        # set parameters for WGS-84, UTM, the false northing and the zone central meridian
+        self.tm.set_params(wgs84_a, wgs84_f, utm_origin_latitude, central_meridian,
+                           utm_false_easting, false_northing, utm_scale_factor)
 
-		# perform conversion
-		(lat,lon) = self.tm.tranmerc_to_geodetic (easting, northing)
+        # perform conversion
+        (lat, lon) = self.tm.tranmerc_to_geodetic(easting, northing)
 
-		# return geodetic latitude and longitude in degrees
-		return (lat*self.rad_to_deg, lon*self.rad_to_deg)
+        # return geodetic latitude and longitude in degrees
+        return (lat*self.rad_to_deg, lon*self.rad_to_deg)
 
-#*****************************************************************************
+# *****************************************************************************
