@@ -43,6 +43,8 @@ class data_loader():
         self.GyroY = []
         self.GyroZ = []
 
+        self.velZ = []
+
         self.lat = []
         self.lon = []
 
@@ -113,6 +115,7 @@ class data_loader():
                 self.positionX.append(float(row['x']))
                 self.positionY.append(float(row['y']))
                 self.positionZ.append(float(row['z']))
+                self.velZ.append(float(row['vz']))
 
 
 class FailureDetector():
@@ -162,8 +165,8 @@ class FailureDetector():
 # Class end - Main start
 if __name__ == '__main__':
     FILE_NAME = 'TEST5_30-01-19'
-    FILE_NAME = 'TEST8_30-01-19'
-    FILE_NAME = 'TEST9_08-02-19'
+    # FILE_NAME = 'TEST8_30-01-19'
+    # FILE_NAME = 'TEST9_08-02-19'
     RELATIVE_PATH = 'idt_module_5_materials/csv_files/' + FILE_NAME + '/' + FILE_NAME
     SENSOR_COMBINED = RELATIVE_PATH + '_sensor_combined_0.csv'
     MANUAL_CONTROLLED_SETPOINT = RELATIVE_PATH + '_manual_control_setpoint_0.csv'
@@ -190,34 +193,41 @@ if __name__ == '__main__':
     for i in range(len(imu.AccelerometerXS)):
         detector.update(imu.AccelerometerXS[i],
                         imu.AccelerometerYS[i], imu.AccelerometerZS[i])
-        failure_detection.append(int(detector.isCrashing())*100)
+        failure_detection.append(int(detector.isCrashing()))
 
     # Plotting
     fig, (ax, ax1, ax2) = plt.subplots(1, 3)
 
     # acceleration plot:
-    ax.plot(imu.TimestampS, failure_detection,
-            linewidth=0.5, label='detection')
+    ax_twin = ax.twinx()
     ax.plot(imu.TimestampS, imu.AccelerometerXS,
             linewidth=0.5, label='accel_x')
     ax.plot(imu.TimestampS, imu.AccelerometerYS,
             linewidth=0.5, label='accel_y')
     ax.plot(imu.TimestampS, imu.AccelerometerZS,
             linewidth=0.5, label='accel_z')
-    ax.plot(trigger.ParaTimestampS, trigger.ParaTriggerS,
-            linewidth=1, label='para_trigger')
+
+    ax_twin.plot(imu.TimestampS, failure_detection,
+                 linewidth=1, label='detection')
+    # ax.plot(trigger.ParaTimestampS, trigger.ParaTriggerS,
+    #         linewidth=1, label='para_trigger')
     ax.set(xlabel='time (s)', ylabel='acceleration (m/s^2)',
            title='Acceleration Plot')
+    ax_twin.set_ylabel('Failure')
+    ax_twin.set_ylim(-1, 2)
     legend = ax.legend(loc='best', shadow=True, fontsize='medium')
     ax.grid()
 
-    # gyro plot
+    # # gyro plot
+
     ax1.plot(imu.TimestampS, imu.GyroX,
              linewidth=0.5, label='gyro_x')
     ax1.plot(imu.TimestampS, imu.GyroY,
              linewidth=0.5, label='gyro_y')
     ax1.plot(imu.TimestampS, imu.GyroZ,
              linewidth=0.5, label='gyro_z')
+    ax1.plot(imu.TimestampS, failure_detection,
+             linewidth=1, label='detection')
     ax1.set(xlabel='time (s)', ylabel='Angular rate',
             title='Gyrometer plot')
     legend = ax1.legend(loc='best', shadow=True, fontsize='medium')
@@ -227,7 +237,10 @@ if __name__ == '__main__':
     ax2.plot(position.TimestampS, position.positionX, linewidth=0.5, label='x')
     ax2.plot(position.TimestampS, position.positionY, linewidth=0.5, label='y')
     ax2.plot(position.TimestampS, position.positionZ, linewidth=0.5, label='z')
-    ax2.set(xlabel='time (s)', ylabel='local position [m]', title='Position')
+    ax2.plot(position.TimestampS, position.velZ,
+             linewidth=1, label='z velocity')
+
+    ax2.set(xlabel='time (s)', ylabel='Z velocity [m/s]', title='Z velocity')
     legend = ax2.legend(loc='best', shadow=True, fontsize='medium')
     ax2.grid()
 
