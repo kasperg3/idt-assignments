@@ -2,5 +2,6 @@
     "python.analysis.extraPaths": [
         "./idt_module_2_materials/exercise_utm"
     ],
-    "cmake.sourceDirectory": "${workspaceFolder}/IDT_materials_module6/mavlink_lora_2019/mavlink_lora"
+    "cmake.sourceDirectory": "${workspaceFolder}/IDT_materials_module6/mavlink_lora_2019/mavlink_lora",
+    "cmake.configureOnOpen": false
 }

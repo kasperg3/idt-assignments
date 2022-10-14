@@ -10,6 +10,8 @@ setup.py
 ../../build/idt/idt.egg-info/zip-safe
 idt/__init__.py
 idt/get_global_pos.py
+idt/hermite.py
+idt/qgc_generate_plan_example.py
 resource/idt
 test/test_copyright.py
 test/test_flake8.py
