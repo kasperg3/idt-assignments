@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-#/***************************************************************************
+# /***************************************************************************
 # MavLink LoRa node (ROS) example script
 # Copyright (c) 2018, Kjeld Jensen <kjen@mmmi.sdu.dk> <kj@kjen.dk>
-# SDU UAS Center, http://sdu.dk/uas 
+# SDU UAS Center, http://sdu.dk/uas
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,7 +26,7 @@
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#****************************************************************************
+# ****************************************************************************
 '''
 This example script shows how to obtain position of a UAV.
 
@@ -39,111 +39,113 @@ Revision
 2018-03-14 FMA Cleaned scripts and made them better as examples
 '''
 # parameters
+import csv
+from mavlink_lora.msg import mavlink_lora_msg, mavlink_lora_pos
+import rospy
 mavlink_lora_sub_topic = '/mavlink_rx'
 mavlink_lora_pos_sub_topic = '/mavlink_pos'
-update_interval = 1
+update_interval = 0.1
 
 # imports
-import rospy
-from mavlink_lora.msg import mavlink_lora_msg, mavlink_lora_pos
-import csv
 
 
 class pos_node:
-	def __init__(self):
-		self.f = open('test.csv', 'w')
-		self.writer = csv.writer(self.f)
-		
-		self.writer.writerow(['lon','lat','alt','rel_alt','heading'])
-		# status variables
-		self.last_heard = 0
-		self.lat = 0.0
-		self.lon = 0.0
-		self.alt = 0.0
-		self.rel_alt = 0.0
-		self.heading = 0.0
-		
-		# launch node
-		rospy.init_node('mavlink_lora_pos_simple', disable_signals = True)
+    def __init__(self):
+        self.f = open('test.csv', 'w')
+        self.writer = csv.writer(self.f)
 
-		# subs
-		rospy.Subscriber(mavlink_lora_sub_topic, mavlink_lora_msg, self.on_mavlink_msg)
-		rospy.Subscriber(mavlink_lora_pos_sub_topic, mavlink_lora_pos, self.on_mavlink_lora_pos)
+        self.writer.writerow(
+            ['time', 'lon', 'lat', 'alt', 'rel_alt', 'heading'])
+        # status variables
+        self.last_heard = 0
+        self.lat = 0.0
+        self.lon = 0.0
+        self.alt = 0.0
+        self.rel_alt = 0.0
+        self.heading = 0.0
 
-		# rate to run the loop
-		self.rate = rospy.Rate(update_interval)
+        # launch node
+        rospy.init_node('mavlink_lora_pos_simple', disable_signals=True)
 
-		# wait until everything is running
-		rospy.sleep(1)
+        # subs
+        rospy.Subscriber(mavlink_lora_sub_topic,
+                         mavlink_lora_msg, self.on_mavlink_msg)
+        rospy.Subscriber(mavlink_lora_pos_sub_topic,
+                         mavlink_lora_pos, self.on_mavlink_lora_pos)
 
-	def write(self):
-		now = rospy.get_time()
+        # rate to run the loop
+        self.rate = rospy.Rate(update_interval)
 
-		# update last_heard
-		t = now - self.last_heard
-		if t < 86400:
-			last_heard_text = '%ds' % t
-		else:
-			last_heard_text = 'Never'
+        # wait until everything is running
+        rospy.sleep(1)
 
-		# update pos status
-		if self.lat == 0 and self.lon == 0:
-			pos_text = 'Unknown'
-		else:
-			pos_text = '%02.5f %03.5f' % (self.lat, self.lon)
+    def write(self):
+        now = rospy.get_time()
 
-		# update altitude status
-		if self.alt == 0:
-			alt_text = 'Unknown'
-		else:
-			alt_text = '%.1fm ' % (self.rel_alt)
-   
-		if self.rel_alt == 0:
-			rel_alt_text = 'Unknown'
-		else:
-			rel_alt_text = '%.1fm ' % (self.rel_alt)
-   
-		if self.heading == 0:
-			heading_text = 'Unknown'
-		else:
-			heading_text = '%.1fm ' % (self.heading)
+        # update last_heard
+        t = now - self.last_heard
+        if t < 86400:
+            last_heard_text = '%ds' % t
+        else:
+            last_heard_text = 'Never'
 
-		print('Last heard:         {0}'.format(last_heard_text))
-		print('Position:           {0}'.format(pos_text))
-		print('Altitude:           {0}'.format(alt_text))
-		print('Altitude:           {0}'.format(rel_alt_text))
-		print('Altitude:           {0}'.format(heading_text))
-		print('\n')
-		#		self.writer.writerow(['lon','lat','alt','rel_alt','heading'])
-  
-		row = [str(self.lat),str(self.lon),str(self.alt),str(self.rel_alt),str(self.heading)]
-		self.writer.writerow(row)
-  
-	
-	def on_mavlink_msg(self, msg):
-		# save timestamp of last package of anything received from the drone
-		self.last_heard = rospy.get_time()
+        # update pos status
+        if self.lat == 0 and self.lon == 0:
+            pos_text = 'Unknown'
+        else:
+            pos_text = '%02.5f %03.5f' % (self.lat, self.lon)
 
-	def on_mavlink_lora_pos(self, msg):
-		self.lat = msg.lat
-		self.lon = msg.lon
-		self.alt = msg.alt
-		self.rel_alt = msg.relative_alt
-		self.heading = msg.heading
+        # update altitude status
+        if self.alt == 0:
+            alt_text = 'Unknown'
+        else:
+            alt_text = '%.1fm ' % (self.rel_alt)
 
-	def run(self):
-		# loop until shutdown
-		while not (rospy.is_shutdown()):
-			# do stuff
-			self.write()
+        if self.rel_alt == 0:
+            rel_alt_text = 'Unknown'
+        else:
+            rel_alt_text = '%.1fm ' % (self.rel_alt)
 
-			# sleep the defined interval
-			self.rate.sleep()
-		self.f.close()
+        if self.heading == 0:
+            heading_text = 'Unknown'
+        else:
+            heading_text = '%.1fm ' % (self.heading)
+
+        print('Last heard:         {0}'.format(last_heard_text))
+        print('Time:           {0}'.format(now))
+        print('Position:           {0}'.format(pos_text))
+        print('Altitude:           {0}'.format(alt_text))
+        print('Relative Altitude:           {0}'.format(rel_alt_text))
+        print('Heading:           {0}'.format(heading_text))
+        print('\n')
+        #		self.writer.writerow(['lon','lat','alt','rel_alt','heading'])
+
+        row = [str(self.last_heard), str(self.lat), str(self.lon), str(self.alt),
+               str(self.rel_alt), str(self.heading)]
+        self.writer.writerow(row)
+
+    def on_mavlink_msg(self, msg):
+        # save timestamp of last package of anything received from the drone
+        self.last_heard = rospy.get_time()
+
+    def on_mavlink_lora_pos(self, msg):
+        self.lat = msg.lat
+        self.lon = msg.lon
+        self.alt = msg.alt
+        self.rel_alt = msg.relative_alt
+        self.heading = msg.heading
+
+    def run(self):
+        # loop until shutdown
+        while not (rospy.is_shutdown()):
+            # do stuff
+            self.write()
+
+            # sleep the defined interval
+            self.rate.sleep()
+        self.f.close()
 
 
 if __name__ == '__main__':
-	gcs = pos_node()
-	gcs.run()
-	
-
+    gcs = pos_node()
+    gcs.run()
