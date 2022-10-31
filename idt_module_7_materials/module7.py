@@ -75,7 +75,7 @@ def path_pruning(dl):
 def main():
 
     # load csv file test.csv and convert from Geodetic to UTM
-    RELATIVE_PATH = 'idt_module_7_materials/test.csv'
+    RELATIVE_PATH = 'idt_module_7_materials/rosbag_test.csv'
     data_loader = DataLoader(RELATIVE_PATH)
     # print(data_loader.data)
     plot_coordinates(data_loader)

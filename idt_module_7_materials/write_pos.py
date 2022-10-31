@@ -40,11 +40,13 @@ Revision
 '''
 # parameters
 import csv
-from mavlink_lora.msg import mavlink_lora_msg, mavlink_lora_pos
+
+from mavlink_lora.msg import mavlink_lora_msg, mavlink_lora_pos, mavlink_lora_gps_raw
 import rospy
 mavlink_lora_sub_topic = '/mavlink_rx'
 mavlink_lora_pos_sub_topic = '/mavlink_pos'
-update_interval = 0.1
+mavlink_lora_gps_raw_sub_topic = '/mavlink_gps_raw'
+update_interval = 10
 
 # imports
 
@@ -63,6 +65,7 @@ class pos_node:
         self.alt = 0.0
         self.rel_alt = 0.0
         self.heading = 0.0
+        self.time_usec = 0.0
 
         # launch node
         rospy.init_node('mavlink_lora_pos_simple', disable_signals=True)
@@ -72,6 +75,11 @@ class pos_node:
                          mavlink_lora_msg, self.on_mavlink_msg)
         rospy.Subscriber(mavlink_lora_pos_sub_topic,
                          mavlink_lora_pos, self.on_mavlink_lora_pos)
+
+        # For raw rosbag 
+        # rospy.Subscriber(mavlink_lora_gps_raw_sub_topic,
+        #                  mavlink_lora_gps_raw, self.on_mavlink_lora_gps_raw)
+
 
         # rate to run the loop
         self.rate = rospy.Rate(update_interval)
@@ -120,13 +128,20 @@ class pos_node:
         print('\n')
         #		self.writer.writerow(['lon','lat','alt','rel_alt','heading'])
 
-        row = [str(self.last_heard), str(self.lat), str(self.lon), str(self.alt),
+        row = [str(self.time_usec), str(self.lat), str(self.lon), str(self.alt),
                str(self.rel_alt), str(self.heading)]
         self.writer.writerow(row)
 
     def on_mavlink_msg(self, msg):
         # save timestamp of last package of anything received from the drone
         self.last_heard = rospy.get_time()
+
+    def on_mavlink_lora_gps_raw(self,msg):
+        self.time_usec = msg.time_usec
+        self.lat = msg.lat
+        self.lon = msg.lon
+        self.alt = msg.alt
+        
 
     def on_mavlink_lora_pos(self, msg):
         self.lat = msg.lat
