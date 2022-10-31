@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import math
 import csv
 from ctypes import sizeof
 from matplotlib import pyplot as plt
@@ -30,13 +31,14 @@ class DataLoader():
                                   'zone': coord.zone,
                                   'hemisphere': coord.hemisphere,
                                   'rel_alt': float(row['rel_alt']),
-                                  'heading': float(row['heading'])
+                                  'heading': float(row['heading']),
+                                  'time': float(row['time'])
                                   })
         self.df = pd.DataFrame(self.data)
 
 
 def plot_coordinates(data):
-    df = data.df
+    df = pd.DataFrame(data)
     plt.figure(1)
     plt.plot(df['northing'], df['easting'])
     plt.axis('equal')
@@ -55,15 +57,28 @@ def window(seq, n=2):
         yield result
 
 
-def filter_outliers(dl):
-    window_size = 5
+# Methods max_dist, max_speed, and statistical
+def filter_outliers(dl,max_speed):
     filtered_data = []
-
-    for i in range(len(dl.data) - window_size + 1):
-        sequence = dl.data[i: i + window_size]
-        # remove outliers based on the maximum distance  between two  points
-        # relative to  the time  between  recording and  the  maximum speed  of
-        # thedrone (in this case your walking speed
+    # if method == 'statistical':
+    #     window_size = 30
+    #     for i in range(len(dl.data) - window_size + 1):
+    #         sequence = pd.DataFrame(dl.data[i: i + window_size]) 
+    #         easting_z_score = (dl.data[i]['easting'] - sequence['easting'].mean()) / sequence['easting'].std()
+    #         northing_z_score = (dl.data[i]['northing'] - sequence['northing'].mean()) / sequence['northing'].std()
+            
+    #         # remove outliers based on the z score
+    #         if abs(easting_z_score) < 1 or abs(northing_z_score) < 1 : 
+    #             filtered_data.append(dl.data[i])
+    # elif method == 'max_speed':   
+    for i in range(len(dl.data) -2):
+        pos_change = math.sqrt((dl.data[i]['easting'] - dl.data[i+1]['easting'])**2 + (dl.data[i]['northing'] - dl.data[i+1]['northing'])**2)
+        time_diff = abs(dl.data[i]['time'] - dl.data[i+1]['time']) # Micro to seconds
+        if time_diff != 0.0:
+            speed = pos_change/(time_diff*0.000001)
+            if(speed < max_speed):
+                print("speed: ", speed)
+                filtered_data.append(dl.data[i])        
 
     return filtered_data
 
@@ -78,11 +93,12 @@ def main():
     RELATIVE_PATH = 'idt_module_7_materials/rosbag_test.csv'
     data_loader = DataLoader(RELATIVE_PATH)
     # print(data_loader.data)
-    plot_coordinates(data_loader)
+    plot_coordinates(data_loader.data)
     # do outlier removal
-    filter_outliers(data_loader)
+    filtered_data = filter_outliers(data_loader, 5.0)
+    plot_coordinates(filtered_data)
     # implement a path pruning algorithm minimize the points used
-
+    
     # convert back to lat lon
 
     # Create a mission plan
