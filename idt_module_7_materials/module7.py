@@ -10,7 +10,6 @@ from itertools import islice
 
 
 class DataLoader():
-
     def __init__(self, inFileName, debug=False):
         self.fileName = inFileName
         self.data = []
@@ -115,7 +114,6 @@ def DouglasPeucker(data, epsilon=0.01):
 
 
 def main():
-
     # load csv file test.csv and convert from Geodetic to UTM
     RELATIVE_PATH = 'idt_module_7_materials/rosbag_test.csv'
     data_loader = DataLoader(RELATIVE_PATH)
@@ -127,7 +125,7 @@ def main():
     # implement a path pruning algorithm minimize the points used
     plot_coordinates(DouglasPeucker(filtered_data, 1.0))
     # convert back to lat lon
-
+    # This is already contained in the data
     # Create a mission plan
 
 
