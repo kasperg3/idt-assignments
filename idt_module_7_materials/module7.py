@@ -178,11 +178,22 @@ def main():
     kml = exportkml.kmlclass()
     kml.begin('testfile.kml', 'Example', 'Example on the use of kmlclass', 0.7)
     kml.trksegbegin('', '', 'red', 'absolute')
-    data_to_write = data_loader.data
+    data_to_write = simplified_path
     for i in range(len(data_to_write)):
         kml.pt(data_to_write[i]['lon'], data_to_write[i]['lat'], 0)
     kml.trksegend()
     kml.end()
+
+    import qgc_plan_generator
+    height = 50
+    generator = qgc_plan_generator.QGCPlanGenerator()
+    generator.set_home_position(
+        simplified_path[0]['lon'], simplified_path[0]['lat'], height)
+
+    for d in simplified_path:
+        generator.add_waypoint(d['lon'], d['lat'], height)
+
+    generator.generate()
 
 
 if __name__ == '__main__':
