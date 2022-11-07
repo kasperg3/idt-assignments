@@ -3,10 +3,12 @@ import math
 import csv
 from ctypes import sizeof
 from matplotlib import pyplot as plt
-import numpy
+import numpy as np
 from pygeodesy import ellipsoidalVincenty, utm
 import pandas as pd
 from itertools import islice
+
+from polysimplify import VWSimplifier
 
 
 class DataLoader():
@@ -34,6 +36,12 @@ class DataLoader():
                                   'time': float(row['time'])
                                   })
         self.df = pd.DataFrame(self.data)
+
+
+class PathSimplification():
+    def __init__(self):
+        # TODO move functions into this and create a module for this
+        pass
 
 
 def plot_coordinates(data):
@@ -83,21 +91,41 @@ def filter_outliers(dl, max_speed):
     return filtered_data
 
 
-def DouglasPeucker(data, epsilon=0.01):
-    # function DouglasPeucker(PointList[], epsilon)
-    # Find the point with the maximum distance
+def unit_vector(vector):
+    """ Returns the unit vector of the vector.  """
+    return vector / np.linalg.norm(vector)
+
+
+def angle_between(v1, v2):
+    v1_u = unit_vector(v1)
+    v2_u = unit_vector(v2)
+    return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
+
+
+def DouglasPeucker(data, epsilon=0.01, metric='distance'):
+    # Minimizes the deviation from the track
     dmax = 0
+    angle_min = 3.15
     index = 0
     end = len(data) - 1
     for i in range(len(data)-1):
-        p1 = numpy.array([data[0]['northing'], data[0]['easting']])
-        p2 = numpy.array([data[end]['northing'], data[end]['easting']])
-        p3 = numpy.array([data[i]['northing'], data[i]['easting']])
-        d = numpy.linalg.norm(numpy.cross(p2-p1, p1-p3)) / \
-            numpy.linalg.norm(p2-p1)
+        p1 = np.array([data[0]['northing'], data[0]['easting']])
+        p2 = np.array([data[end]['northing'], data[end]['easting']])
+        p3 = np.array([data[i]['northing'], data[i]['easting']])
+
+        # Distance to point
+        d = np.linalg.norm(np.cross(p2-p1, p1-p3)) / \
+            np.linalg.norm(p2-p1)
+
+        # Minimum angle
         if d > dmax:
             index = i
             dmax = d
+
+        # angle = angle_between(p2-p1, p3-p2)
+        # if angle < angle_min:
+        #     index = i
+        #     angle_min
     result_list = []
 
     # # If max distance is greater than epsilon, recursively simplify
@@ -123,10 +151,38 @@ def main():
     filtered_data = filter_outliers(data_loader, 5.0)
     plot_coordinates(filtered_data)
     # implement a path pruning algorithm minimize the points used
-    plot_coordinates(DouglasPeucker(filtered_data, 1.0))
+    simplified_path = DouglasPeucker(filtered_data, 1.0)
+    plot_coordinates(simplified_path)
+
+    # simplify with number of points using Visvalingam-Whyatt polyline simplification
+    test = []
+    for d in filtered_data:
+        test.append([d['northing'], d['easting']])
+
+    simplifier = VWSimplifier(test)
+    VWpts = simplifier.from_ratio(0.05)
+
+    xs = [x[0] for x in VWpts]
+    ys = [x[1] for x in VWpts]
+    plt.figure(1)
+    plt.plot(xs, ys)
+    plt.axis('equal')
+    plt.show()
+
     # convert back to lat lon
     # This is already contained in the data
     # Create a mission plan
+
+    # export longitude/latitude
+    import exportkml
+    kml = exportkml.kmlclass()
+    kml.begin('testfile.kml', 'Example', 'Example on the use of kmlclass', 0.7)
+    kml.trksegbegin('', '', 'red', 'absolute')
+    data_to_write = data_loader.data
+    for i in range(len(data_to_write)):
+        kml.pt(data_to_write[i]['lon'], data_to_write[i]['lat'], 0)
+    kml.trksegend()
+    kml.end()
 
 
 if __name__ == '__main__':
