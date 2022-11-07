@@ -11,8 +11,9 @@ from itertools import islice
 from polysimplify import VWSimplifier
 
 
-class DataLoader():
+class CoordinatePreprocessor():
     def __init__(self, inFileName, debug=False):
+        self.figure_number = 0
         self.fileName = inFileName
         self.data = []
 
@@ -38,18 +39,15 @@ class DataLoader():
         self.df = pd.DataFrame(self.data)
 
 
-class PathSimplification():
-    def __init__(self):
-        # TODO move functions into this and create a module for this
-        pass
-
-
-def plot_coordinates(data):
+def plot_coordinates(data, xlabel='easting[m]', ylabel='northing[m]', title='', figure_number=0):
     df = pd.DataFrame(data)
-    plt.figure(1)
+    plt.figure(figure_number)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
     plt.plot(df['northing'], df['easting'])
     plt.axis('equal')
-    plt.show()
+    figure_number = figure_number + 1
 
 
 def window(seq, n=2):
@@ -144,15 +142,16 @@ def DouglasPeucker(data, epsilon=0.01, metric='distance'):
 def main():
     # load csv file test.csv and convert from Geodetic to UTM
     RELATIVE_PATH = 'idt_module_7_materials/rosbag_test.csv'
-    data_loader = DataLoader(RELATIVE_PATH)
+    data_loader = CoordinatePreprocessor(RELATIVE_PATH)
     # print(data_loader.data)
-    plot_coordinates(data_loader.data)
+    plot_coordinates(data_loader.data, figure_number=0,
+                     title='Raw data and added outliers')
     # do outlier removal
     filtered_data = filter_outliers(data_loader, 5.0)
-    plot_coordinates(filtered_data)
+    plot_coordinates(filtered_data, figure_number=1, title='Outlier filtered')
     # implement a path pruning algorithm minimize the points used
     simplified_path = DouglasPeucker(filtered_data, 1.0)
-    plot_coordinates(simplified_path)
+    plot_coordinates(simplified_path, figure_number=2, title="Douglas Peucker")
 
     # simplify with number of points using Visvalingam-Whyatt polyline simplification
     test = []
@@ -164,16 +163,15 @@ def main():
 
     xs = [x[0] for x in VWpts]
     ys = [x[1] for x in VWpts]
-    plt.figure(1)
+    plt.figure(3)
     plt.plot(xs, ys)
+    plt.ylabel('northing[m]')
+    plt.xlabel('easting[m]')
+    plt.title('Visvalingam-Whyatt polyline simplification')
     plt.axis('equal')
     plt.show()
 
-    # convert back to lat lon
-    # This is already contained in the data
-    # Create a mission plan
-
-    # export longitude/latitude
+    # export longitude/latitude as kml
     import exportkml
     kml = exportkml.kmlclass()
     kml.begin('testfile.kml', 'Example', 'Example on the use of kmlclass', 0.7)
@@ -184,6 +182,7 @@ def main():
     kml.trksegend()
     kml.end()
 
+    # Generate plan
     import qgc_plan_generator
     height = 50
     generator = qgc_plan_generator.QGCPlanGenerator()
