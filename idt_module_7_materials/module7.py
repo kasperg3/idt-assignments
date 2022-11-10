@@ -3,14 +3,17 @@ import math
 import csv
 from ctypes import sizeof
 from matplotlib import pyplot as plt
-import numpy
+import numpy as np
 from pygeodesy import ellipsoidalVincenty, utm
 import pandas as pd
 from itertools import islice
 
+from polysimplify import VWSimplifier
 
-class DataLoader():
+
+class CoordinatePreprocessor():
     def __init__(self, inFileName, debug=False):
+        self.figure_number = 0
         self.fileName = inFileName
         self.data = []
 
@@ -36,12 +39,15 @@ class DataLoader():
         self.df = pd.DataFrame(self.data)
 
 
-def plot_coordinates(data):
+def plot_coordinates(data, xlabel='easting[m]', ylabel='northing[m]', title='', figure_number=0):
     df = pd.DataFrame(data)
-    plt.figure(1)
+    plt.figure(figure_number)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
     plt.plot(df['northing'], df['easting'])
     plt.axis('equal')
-    plt.show()
+    figure_number = figure_number + 1
 
 
 def window(seq, n=2):
@@ -83,21 +89,41 @@ def filter_outliers(dl, max_speed):
     return filtered_data
 
 
-def DouglasPeucker(data, epsilon=0.01):
-    # function DouglasPeucker(PointList[], epsilon)
-    # Find the point with the maximum distance
+def unit_vector(vector):
+    """ Returns the unit vector of the vector.  """
+    return vector / np.linalg.norm(vector)
+
+
+def angle_between(v1, v2):
+    v1_u = unit_vector(v1)
+    v2_u = unit_vector(v2)
+    return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
+
+
+def DouglasPeucker(data, epsilon=0.01, metric='distance'):
+    # Minimizes the deviation from the track
     dmax = 0
+    angle_min = 3.15
     index = 0
     end = len(data) - 1
     for i in range(len(data)-1):
-        p1 = numpy.array([data[0]['northing'], data[0]['easting']])
-        p2 = numpy.array([data[end]['northing'], data[end]['easting']])
-        p3 = numpy.array([data[i]['northing'], data[i]['easting']])
-        d = numpy.linalg.norm(numpy.cross(p2-p1, p1-p3)) / \
-            numpy.linalg.norm(p2-p1)
+        p1 = np.array([data[0]['northing'], data[0]['easting']])
+        p2 = np.array([data[end]['northing'], data[end]['easting']])
+        p3 = np.array([data[i]['northing'], data[i]['easting']])
+
+        # Distance to point
+        d = np.linalg.norm(np.cross(p2-p1, p1-p3)) / \
+            np.linalg.norm(p2-p1)
+
+        # Minimum angle
         if d > dmax:
             index = i
             dmax = d
+
+        # angle = angle_between(p2-p1, p3-p2)
+        # if angle < angle_min:
+        #     index = i
+        #     angle_min
     result_list = []
 
     # # If max distance is greater than epsilon, recursively simplify
@@ -116,17 +142,57 @@ def DouglasPeucker(data, epsilon=0.01):
 def main():
     # load csv file test.csv and convert from Geodetic to UTM
     RELATIVE_PATH = 'idt_module_7_materials/rosbag_test.csv'
-    data_loader = DataLoader(RELATIVE_PATH)
+    data_loader = CoordinatePreprocessor(RELATIVE_PATH)
     # print(data_loader.data)
-    plot_coordinates(data_loader.data)
+    plot_coordinates(data_loader.data, figure_number=0,
+                     title='Raw data and added outliers')
     # do outlier removal
     filtered_data = filter_outliers(data_loader, 5.0)
-    plot_coordinates(filtered_data)
+    plot_coordinates(filtered_data, figure_number=1, title='Outlier filtered')
     # implement a path pruning algorithm minimize the points used
-    plot_coordinates(DouglasPeucker(filtered_data, 1.0))
-    # convert back to lat lon
-    # This is already contained in the data
-    # Create a mission plan
+    simplified_path = DouglasPeucker(filtered_data, 1.0)
+    plot_coordinates(simplified_path, figure_number=2, title="Douglas Peucker")
+
+    # simplify with number of points using Visvalingam-Whyatt polyline simplification
+    test = []
+    for d in filtered_data:
+        test.append([d['northing'], d['easting']])
+
+    simplifier = VWSimplifier(test)
+    VWpts = simplifier.from_ratio(0.05)
+
+    xs = [x[0] for x in VWpts]
+    ys = [x[1] for x in VWpts]
+    plt.figure(3)
+    plt.plot(xs, ys)
+    plt.ylabel('northing[m]')
+    plt.xlabel('easting[m]')
+    plt.title('Visvalingam-Whyatt polyline simplification')
+    plt.axis('equal')
+    plt.show()
+
+    # export longitude/latitude as kml
+    import exportkml
+    kml = exportkml.kmlclass()
+    kml.begin('testfile.kml', 'Example', 'Example on the use of kmlclass', 0.7)
+    kml.trksegbegin('', '', 'red', 'absolute')
+    data_to_write = simplified_path
+    for i in range(len(data_to_write)):
+        kml.pt(data_to_write[i]['lon'], data_to_write[i]['lat'], 0)
+    kml.trksegend()
+    kml.end()
+
+    # Generate plan
+    import qgc_plan_generator
+    height = 50
+    generator = qgc_plan_generator.QGCPlanGenerator()
+    generator.set_home_position(
+        simplified_path[0]['lon'], simplified_path[0]['lat'], height)
+
+    for d in simplified_path:
+        generator.add_waypoint(d['lon'], d['lat'], height)
+
+    generator.generate()
 
 
 if __name__ == '__main__':
