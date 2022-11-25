@@ -56,7 +56,7 @@ class pos_node:
 		self.f = open('pos-' + str(ct.timestamp()) +'.csv', 'w')
 		self.writer = csv.writer(self.f)
 		
-		self.writer.writerow(['lon','lat','alt','rel_alt','heading'])
+		self.writer.writerow(['lon','lat','alt','rel_alt','heading', 'time'])
 		# status variables
 		self.last_heard = 0
 		self.lat = 0.0
@@ -118,7 +118,7 @@ class pos_node:
 		print('\n')
 		#		self.writer.writerow(['lon','lat','alt','rel_alt','heading'])
   
-		row = [str(self.lat),str(self.lon),str(self.alt),str(self.rel_alt),str(self.heading)]
+		row = [str(self.lat),str(self.lon),str(self.alt),str(self.rel_alt),str(self.heading), now]
 		self.writer.writerow(row)
   
 	

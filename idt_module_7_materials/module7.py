@@ -24,7 +24,6 @@ class CoordinatePreprocessor():
                 lat = float(row['lat'])
                 ll = ellipsoidalVincenty.LatLon(lat, lon)
                 coord = ll.toUtm()
-                # TODO add time
                 self.data.append({'lon': lon,
                                  'lat': lat,
                                   'alt': float(row['alt']),
@@ -141,13 +140,15 @@ def DouglasPeucker(data, epsilon=0.01, metric='distance'):
 
 def main():
     # load csv file test.csv and convert from Geodetic to UTM
-    RELATIVE_PATH = 'idt_module_7_materials/rosbag_test.csv'
+    RELATIVE_PATH = 'idt_module_7_materials/pos-1669366835.041776.csv'
+    # RELATIVE_PATH = 'idt_module_7_materials/pos-1669364276.239118.csv'
+    # RELATIVE_PATH='idt_module_7_materials/pos-1669364831.510198.csv'
     data_loader = CoordinatePreprocessor(RELATIVE_PATH)
     # print(data_loader.data)
     plot_coordinates(data_loader.data, figure_number=0,
                      title='Raw data and added outliers')
     # do outlier removal
-    filtered_data = filter_outliers(data_loader, 5.0)
+    filtered_data =data_loader.data# filter_outliers(data_loader, 10)
     plot_coordinates(filtered_data, figure_number=1, title='Outlier filtered')
     # implement a path pruning algorithm minimize the points used
     simplified_path = DouglasPeucker(filtered_data, 1.0)
@@ -159,7 +160,7 @@ def main():
         test.append([d['northing'], d['easting']])
 
     simplifier = VWSimplifier(test)
-    VWpts = simplifier.from_ratio(0.05)
+    VWpts = simplifier.from_ratio(0.50)
 
     xs = [x[0] for x in VWpts]
     ys = [x[1] for x in VWpts]
