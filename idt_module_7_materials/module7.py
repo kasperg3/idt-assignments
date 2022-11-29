@@ -49,39 +49,17 @@ def plot_coordinates(data, xlabel='easting[m]', ylabel='northing[m]', title='', 
     figure_number = figure_number + 1
 
 
-def window(seq, n=2):
-    "Returns a sliding window (of width n) over data from the iterable"
-    "   s -> (s0,s1,...s[n-1]), (s1,s2,...,sn), ...                   "
-    it = iter(seq)
-    result = tuple(islice(it, n))
-    if len(result) == n:
-        yield result
-    for elem in it:
-        result = result[1:] + (elem,)
-        yield result
-
 
 # Methods max_dist, max_speed, and statistical
 def filter_outliers(dl, max_speed):
     filtered_data = []
-    # if method == 'statistical':
-    #     window_size = 30
-    #     for i in range(len(dl.data) - window_size + 1):
-    #         sequence = pd.DataFrame(dl.data[i: i + window_size])
-    #         easting_z_score = (dl.data[i]['easting'] - sequence['easting'].mean()) / sequence['easting'].std()
-    #         northing_z_score = (dl.data[i]['northing'] - sequence['northing'].mean()) / sequence['northing'].std()
-
-    #         # remove outliers based on the z score
-    #         if abs(easting_z_score) < 1 or abs(northing_z_score) < 1 :
-    #             filtered_data.append(dl.data[i])
-    # elif method == 'max_speed':
     for i in range(len(dl.data) - 1):
         pos_change = math.sqrt((dl.data[i]['easting'] - dl.data[i+1]['easting'])**2 + (
             dl.data[i]['northing'] - dl.data[i+1]['northing'])**2)
-        time_diff = abs(dl.data[i]['time'] - dl.data[i+1]
-                        ['time'])  # Micro to seconds
+        time_diff = abs(dl.data[i]['time'] - dl.data[i+1]['time'])
         if time_diff != 0.0:
-            speed = pos_change/(time_diff*0.000001)
+            speed = pos_change/(time_diff)
+            print(speed)
             if (speed < max_speed):
                 filtered_data.append(dl.data[i])
 
@@ -142,34 +120,36 @@ def main():
     # load csv file test.csv and convert from Geodetic to UTM
     RELATIVE_PATH = 'idt_module_7_materials/pos-1669366835.041776.csv'
     # RELATIVE_PATH = 'idt_module_7_materials/pos-1669364276.239118.csv'
-    # RELATIVE_PATH='idt_module_7_materials/pos-1669364831.510198.csv'
+    RELATIVE_PATH='idt_module_7_materials/pos-1669364831.510198.csv'
     data_loader = CoordinatePreprocessor(RELATIVE_PATH)
     # print(data_loader.data)
     plot_coordinates(data_loader.data, figure_number=0,
-                     title='Raw data and added outliers')
+                     title='Raw data')
     # do outlier removal
-    filtered_data =data_loader.data# filter_outliers(data_loader, 10)
+    filtered_data = filter_outliers(data_loader, 10)
+    
     plot_coordinates(filtered_data, figure_number=1, title='Outlier filtered')
+    
     # implement a path pruning algorithm minimize the points used
     simplified_path = DouglasPeucker(filtered_data, 1.0)
     plot_coordinates(simplified_path, figure_number=2, title="Douglas Peucker")
 
     # simplify with number of points using Visvalingam-Whyatt polyline simplification
-    test = []
-    for d in filtered_data:
-        test.append([d['northing'], d['easting']])
+    # test = []
+    # for d in filtered_data:
+    #     test.append([d['northing'], d['easting']])
 
-    simplifier = VWSimplifier(test)
-    VWpts = simplifier.from_ratio(0.50)
+    # simplifier = VWSimplifier(test)
+    # VWpts = simplifier.from_ratio(0.50)
 
-    xs = [x[0] for x in VWpts]
-    ys = [x[1] for x in VWpts]
-    plt.figure(3)
-    plt.plot(xs, ys)
-    plt.ylabel('northing[m]')
-    plt.xlabel('easting[m]')
-    plt.title('Visvalingam-Whyatt polyline simplification')
-    plt.axis('equal')
+    # xs = [x[0] for x in VWpts]
+    # ys = [x[1] for x in VWpts]
+    # plt.figure(3)
+    # plt.plot(xs, ys)
+    # plt.ylabel('northing[m]')
+    # plt.xlabel('easting[m]')
+    # plt.title('Visvalingam-Whyatt polyline simplification')
+    # plt.axis('equal')
     plt.show()
 
     # export longitude/latitude as kml
